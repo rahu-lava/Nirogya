@@ -11,7 +11,8 @@ class setNameController {
     final account = Account(client);
 
     try {
-      final response = await account.updateName(name: name);
+      await account.updateName(name: name);
+      authProvider.setLogged(true);
       return true;
     } catch (e) {
       print("Your Error is $e ");

@@ -97,6 +97,7 @@ class _SetNameState extends State<SetName> {
                             width: MediaQuery.of(context).size.width * 0.8,
                             height: 50,
                             child: TextField(
+                              controller: nameController,
                               cursorColor: const Color(0xff920000),
                               keyboardType: TextInputType.name,
                               inputFormatters: [
@@ -143,7 +144,9 @@ class _SetNameState extends State<SetName> {
                           ),
                           child: TextButton(
                             onPressed: () {
-                              _setUserName(context, nameController.text);
+                              print("your Name : " + nameController.text);
+                              _setUserName(
+                                  context, (nameController.text).trim());
                             },
                             child: const Text(
                               "Proceed",

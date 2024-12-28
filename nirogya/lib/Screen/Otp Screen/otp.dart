@@ -68,11 +68,14 @@ class _OtpScreenState extends State<OtpScreen> {
         .cancel(); // Make sure to cancel the timer when the widget is disposed
   }
 
-  Future<void> sendOtp(value) async {
+  Future<void> verifyOtp(value) async {
     Future<bool> result = OtpController().onVerifyOtp(context, value);
     if (await result) {
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => const SetName()));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Successfully verified"),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -152,7 +155,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             length: 6,
                             onCompleted: (value) {
                               _otp = value;
-                              sendOtp(value);
+                              verifyOtp(value);
                             },
                             defaultPinTheme: PinTheme(
                                 width: 40,
@@ -189,7 +192,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           child: TextButton(
                             onPressed: () {
                               if (_otp.length == 6) {
-                                sendOtp(_otp);
+                                verifyOtp(_otp);
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -223,10 +226,8 @@ class _OtpScreenState extends State<OtpScreen> {
                                   : Colors.grey,
                               fontSize: 16,
                               fontFamily: "Poppins",
-                              fontWeight: FontWeight.w400,
-                              decoration: _isTimerFinished
-                                  ? TextDecoration.underline
-                                  : null, // Underline only when timer finishes
+                              fontWeight: FontWeight
+                                  .w400, // Underline only when timer finishes
                             ),
                           ),
                         ),
