@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:nirogya/Auth/auth_provider.dart';
 import 'package:nirogya/Screen/Login%20Screen/login.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:introduction_screen/introduction_screen.dart';
 // import 'package:nirogya/Screen/Home/home.dart';
 
@@ -13,6 +16,7 @@ class IntroScreen extends StatefulWidget {
 
 class _IntroScreenState extends State<IntroScreen> {
   final PageController _pageController = PageController();
+  // AuthProvider authProvider =
   int _currentIndex = 0;
   void _onPageChanged(int index) {
     setState(() {
@@ -99,6 +103,10 @@ class _IntroScreenState extends State<IntroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // updateIsFirst();
+    AuthProvider authProvider = context.read<AuthProvider>();
+    authProvider.setFirstTime();
+
     return Scaffold(
       body: SafeArea(
         minimum: const EdgeInsets.all(16.0),

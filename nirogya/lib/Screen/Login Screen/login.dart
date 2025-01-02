@@ -2,8 +2,13 @@ import 'package:country_picker/country_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:lottie/lottie.dart';
 import 'package:nirogya/Screen/Login%20Screen/login_controller.dart';
 import 'package:nirogya/Screen/Otp%20Screen/otp.dart';
+import 'package:nirogya/Widget/loading_widget.dart';
+import 'package:toasty_box/toast_enums.dart';
+import 'package:toasty_box/toast_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +21,9 @@ class _LoginScreenState extends State<LoginScreen> {
   FocusNode focusNode = FocusNode();
   String _countryCode = "91";
   TextEditingController phoneNumberController = TextEditingController();
+
+  // Lottie animation state
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: EdgeInsets.symmetric(vertical: 20, horizontal: 15),
                     child: Icon(
                       Icons.arrow_back,
-                      color: Colors.white,
+                      color: Color(0xff920000),
                     ),
                   ),
                 ),
@@ -75,7 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           BorderRadius.only(topRight: Radius.circular(70)),
                     ),
                     child: Column(
-                      // mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 150),
@@ -97,9 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                     onPressed: () {
                                       showCountryPicker(
                                           context: context,
+                                          favorite: const ['+91', 'IN'],
                                           countryListTheme:
                                               const CountryListThemeData(
-                                                  flagSize: 0),
+                                            flagSize: 25,
+                                          ),
                                           showPhoneCode: true,
                                           onSelect: (Country country) {
                                             setState(() {
@@ -127,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     FilteringTextInputFormatter.digitsOnly,
                                     LengthLimitingTextInputFormatter(10),
                                   ],
-                                  style: TextStyle(fontSize: 18),
+                                  style: const TextStyle(fontSize: 18),
                                   decoration: const InputDecoration(
                                     hintText: "Mobile Number",
                                     hintStyle: TextStyle(
@@ -136,21 +145,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                       Icons.phone,
                                       color: Color(0xff920000),
                                     ),
-                                    // Customizing the bottom border
                                     enabledBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
-                                        color: Colors
-                                            .grey, // Change to your desired color
-                                        width:
-                                            2.0, // Adjust the width of the bottom border
+                                        color: Colors.grey,
+                                        width: 2.0,
                                       ),
                                     ),
                                     focusedBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
-                                        color: Colors
-                                            .grey, // Color when the field is focused
-                                        width:
-                                            2.0, // Adjust the width of the bottom border when focused
+                                        color: Colors.grey,
+                                        width: 2.0,
                                       ),
                                     ),
                                   ),
@@ -169,17 +173,37 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: TextButton(
                             onPressed: () async {
+                              setState(() {
+                                _isLoading = true;
+                              });
+
                               Future<bool> result = LoginController().sendOtp(
                                   context,
                                   "+$_countryCode",
                                   phoneNumberController.text);
+
                               if (await result) {
-                                print("OTP sent");
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => const OtpScreen()));
+                                ToastService.showSuccessToast(
+                                  context,
+                                  length: ToastLength.medium,
+                                  message: "OTP sent successfully!",
+                                );
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (context) => const OtpScreen()),
+                                  (route) => false,
+                                );
                               } else {
-                                print("OTP not sent");
+                                ToastService.showErrorToast(
+                                  context,
+                                  length: ToastLength.medium,
+                                  message: "Failed to send OTP. Try again!",
+                                );
                               }
+
+                              setState(() {
+                                _isLoading = false;
+                              });
                             },
                             child: const Text(
                               "Send OTP",
@@ -198,6 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
+          if (_isLoading) const CommonLottieWidget(),
           Positioned(
             bottom: 20, // Adjust as needed
             left: 0,

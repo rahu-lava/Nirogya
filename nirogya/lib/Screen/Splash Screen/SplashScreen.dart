@@ -1,9 +1,12 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:nirogya/Auth/auth_provider.dart';
 import 'package:nirogya/Screen/Home/home.dart';
-// import 'package:nirogya/Screen/Home/home.dart';
 import 'package:nirogya/Screen/Intro%20Screen/intro.dart';
+import 'package:nirogya/Screen/Login%20Screen/login.dart';
+import 'package:nirogya/Screen/SetNameScreen/set_name.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -33,26 +36,71 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _controller,
       curve: Curves.easeInOut,
     ));
-
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    late bool isLogged;
+    late bool isFirstTime;
     _controller.forward();
 
     // Navigate to the home page after the animation
-    Future.delayed(const Duration(seconds: 4), () {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      if (authProvider.logged) {
-        // Navigate to HomePage if logged in
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+    Future.delayed(const Duration(seconds: 3), () async {
+
+      isLogged = authProvider.logged;
+      isFirstTime = authProvider.isFirstTime;
+      print("Logged in : " + isLogged.toString());
+      print("First Time : " + isFirstTime.toString());
+
+      if (isLogged) {
+        // If logged in, check the user info
+        Client client = authProvider.client;
+        Account account = Account(client);
+
+        try {
+          final user = await account.get(); // Fetch user data
+          print("The user is : " + user.name.toString());
+
+          if (user.name.length == 0) {
+            // If user data is empty, navigate to the IntroScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SetName()),
+            );
+          } else {
+            // Navigate to the HomePage if user data is available
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          }
+        } catch (e) {
+          // If account.get() fails (e.g., user is not logged in), navigate to IntroScreen
+          if (isFirstTime) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const IntroScreen()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          }
+        }
       } else {
-        // Navigate to IntroScreen if not logged in
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const IntroScreen()),
-        );
+        // If not logged in, navigate to IntroScreen
+        if (isFirstTime) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const IntroScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        }
       }
     });
+
   }
 
   @override
@@ -75,7 +123,7 @@ class _SplashScreenState extends State<SplashScreen>
                 alignment: Alignment.centerLeft,
                 widthFactor: _animation.value, // Reveal the image gradually
                 child: child,
-              ), // Clip the overflowing part
+              ),
             );
           },
           child: Image.asset(

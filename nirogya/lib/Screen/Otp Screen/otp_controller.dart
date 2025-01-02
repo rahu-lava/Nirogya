@@ -27,17 +27,20 @@ class OtpController {
 
     try {
       await account.createSession(userId: authProvider.userID, secret: otp);
+      authProvider.setLogged(true);
       User user = await account.get();
       String name = user.name;
       print("your name is : " + name.length.toString());
       if (name.length == 0) {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => SetName(),
-        ));
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SetName()),
+          (route) => false,
+        );
       } else {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ));
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+          (route) => false,
+        );
       }
 
       // await account.deleteSession(sessionId: "current");
@@ -67,8 +70,32 @@ class OtpController {
       // }
       return true;
     } catch (e) {
-      print("Your Error is $e ");
-      return false;
+      //this block will delete the session , if it is already created and then create a new session
+      await account.deleteSession(sessionId: "current");
+      try {
+        await account.createSession(userId: authProvider.userID, secret: otp);
+        authProvider.setLogged(true);
+        User user = await account.get();
+        String name = user.name;
+        print("your name is : " + name.length.toString());
+        // ignore: prefer_is_empty
+        if (name.length == 0) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const SetName()),
+            (route) => false,
+          );
+        } else {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const HomePage()),
+            (route) => false,
+          );
+        }
+        print("Your Error is $e ");
+        return true;
+      } catch (e) {
+        print(e);
+        return false;
+      }
     }
   }
 
