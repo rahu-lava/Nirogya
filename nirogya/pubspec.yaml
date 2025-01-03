@@ -48,6 +48,9 @@ dependencies:
   lottie: ^3.1.3
   toasty_box: ^1.0.4
   fl_chart: ^0.69.2
+  bottom_bar_matu: ^1.5.0 #remove
+  marquee: ^2.2.3 #remove
+  searchable_listview: ^2.16.0
 
   # flutter_otp_text_field: ^1.4.0+2
   # intl_phone_field: ^3.2.0
@@ -61,7 +64,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^3.0.0
+  flutter_lints: ^4.0.0
   # isar_generator: ^3.1.0+1
   build_runner: ^2.4.9
 
@@ -80,7 +83,7 @@ flutter:
     - assets/images/
     - assets/animation/
     - assets/images/greeting_Images/
-  #   - images/a_dot_ham.jpeg
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

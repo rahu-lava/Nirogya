@@ -21,13 +21,13 @@ class GreetingWidget extends StatelessWidget {
     final hour = DateTime.now().hour;
 
     if (hour >= 5 && hour < 12) {
-      return 'images/greeting_Images/morning.png'; // Replace with your morning PNG
+      return 'assets/images/greeting_Images/morning.png'; // Replace with your morning PNG
     } else if (hour >= 12 && hour < 18) {
-      return 'images/greeting_Images/afternoon.png'; // Replace with your afternoon PNG
+      return 'assets/images/greeting_Images/afternoon.png'; // Replace with your afternoon PNG
     } else if (hour >= 18 && hour < 22) {
-      return 'images/greeting_Images/evening.png'; // Replace with your evening PNG
+      return 'assets/images/greeting_Images/evening.png'; // Replace with your evening PNG
     } else {
-      return 'images/greeting_Images/night.png'; // Replace with your night PNG
+      return 'assets/images/greeting_Images/night.png'; // Replace with your night PNG
     }
   }
 

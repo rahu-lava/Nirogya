@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class ExpiryPieChart extends StatefulWidget {
+class StocksPieChart extends StatefulWidget {
   final Map<String, double>
       expiryData; // Map to hold expiry data (expired, safe, soon)
 
-  ExpiryPieChart({required this.expiryData});
+  StocksPieChart({required this.expiryData});
 
   @override
-  _ExpiryPieChartState createState() => _ExpiryPieChartState();
+  _StocksPieChartState createState() => _StocksPieChartState();
 }
 
-class _ExpiryPieChartState extends State<ExpiryPieChart> {
+class _StocksPieChartState extends State<StocksPieChart> {
   int touchedIndex = -1;
 
   List<PieChartSectionData> showingSections() {
