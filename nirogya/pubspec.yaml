@@ -51,6 +51,10 @@ dependencies:
   bottom_bar_matu: ^1.5.0 #remove
   marquee: ^2.2.3 #remove
   searchable_listview: ^2.16.0
+  drag_and_drop_lists: ^0.4.2
+  image_picker: ^1.1.2
+  mobile_scanner: ^5.1.1
+  material_floating_search_bar_2: ^0.5.0
 
   # flutter_otp_text_field: ^1.4.0+2
   # intl_phone_field: ^3.2.0

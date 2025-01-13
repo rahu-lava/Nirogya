@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nirogya/Screen/AddProductBills/add_product_bills.dart';
 import 'package:nirogya/Screen/Home/widget/bills_card.dart';
 import 'package:nirogya/Screen/Home/widget/Sales_list.dart';
 import 'package:nirogya/Screen/Home/widget/purchase_list.dart';
+import 'package:nirogya/Screen/PurchaseBillPage/purchase_bill_add_product.dart';
+import 'package:nirogya/Screen/barcode%20scanner%20Bills/barcode_scanner_bills.dart';
 
 class Bills extends StatefulWidget {
   const Bills({super.key});
@@ -37,7 +40,119 @@ class _BillsState extends State<Bills> {
                 borderRadius: BorderRadius.circular(25),
               ),
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "Select Option",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: "Poppins",
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).pop();
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              BarcodeScannerWithList(),
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      width:
+                                          120, // Fixed width for both containers
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xff920000),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Image.asset(
+                                            'assets/images/scanner_icon.png',
+                                            height: 50,
+                                            width: 50,
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            "Scanner",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.white,
+                                              fontFamily: "Poppins",
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).pop();
+                                      // Add logic for "Manually" option here
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                AddProductBills()),
+                                      );
+                                    },
+                                    child: Container(
+                                      width:
+                                          120, // Fixed width for both containers
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xff920000),
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Image.asset(
+                                            'assets/images/Keyboard.png',
+                                            height: 50,
+                                            width: 50,
+                                          ),
+                                          SizedBox(height: 10),
+                                          Text(
+                                            "Manually",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.white,
+                                              fontFamily: "Poppins",
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
                 child: Text(
                   "Customer Bill",
                   style: TextStyle(
@@ -56,9 +171,12 @@ class _BillsState extends State<Bills> {
                 borderRadius: BorderRadius.circular(25),
               ),
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => PurchaseBillPage()));
+                },
                 child: Text(
-                  "WholeSeller Bill",
+                  "Purchase Bill",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -101,9 +219,7 @@ class _BillsState extends State<Bills> {
                   ],
                 ),
                 SizedBox(height: 10),
-                // Wrapping TabBarView in an Expanded widget
                 Expanded(
-                  // height: MediaQuery.of(context).size.height * 0.6,
                   child: TabBarView(
                     children: [
                       Center(

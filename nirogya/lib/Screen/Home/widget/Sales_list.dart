@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nirogya/Screen/Transaction%20Detail%20Screen/transaction_detail_screen.dart';
 
 class SalesList extends StatefulWidget {
   @override
@@ -108,6 +109,11 @@ class _SalesListState extends State<SalesList> {
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.w300),
                     ),
+                    onTap: () {
+                      // Navigate to Transaction Details screen
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (contect) => TransactionDetailsScreen()));
+                    },
                   ),
                 ),
               );

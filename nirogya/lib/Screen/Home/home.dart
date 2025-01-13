@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nirogya/Screen/Home/Page/bills.dart';
 import 'package:nirogya/Screen/Home/Page/dashboard.dart';
+import 'package:nirogya/Screen/Home/Page/profile.dart';
 import 'package:nirogya/Screen/Home/Page/stocks.dart';
+import 'package:nirogya/Screen/Notification%20Screen/Notification_Screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -58,7 +60,8 @@ class _HomePageState extends State<HomePage> {
                     Icons.notifications_none,
                   ),
                   onPressed: () {
-                    print("Notification icon tapped");
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => NotificationScreen()));
                   },
                 ),
               ),
@@ -87,17 +90,15 @@ class _HomePageState extends State<HomePage> {
                         }
                         return true;
                       },
+                      child: SingleChildScrollView(child: Dashboard()),
+                    ),
+                    const Center(
+                      child: Bills(),
+                    ),
+                    const Center(
                       child: Stocks(),
                     ),
-                    const Center(
-                      child: Text("hey"),
-                    ),
-                    const Center(
-                      child: Text('Third Page'),
-                    ),
-                    const Center(
-                      child: Text('Fourth Page'),
-                    ),
+                    Profile(),
                   ],
                 ),
                 AnimatedPositioned(

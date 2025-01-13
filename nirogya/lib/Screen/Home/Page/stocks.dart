@@ -1,8 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nirogya/Screen/Add%20Stock%20Scanner/scanner_add_stock.dart';
+import 'package:nirogya/Screen/AddProductBills/add_product_bills.dart';
+import 'package:nirogya/Screen/Added%20Product%20Screen/added_product_list.dart';
+import 'package:nirogya/Screen/Dealers%20List%20screen/dealers_list.dart';
+import 'package:nirogya/Screen/Home/widget/confirmation_dailog.dart';
 import 'package:nirogya/Screen/Home/widget/search_widget.dart';
 import 'package:nirogya/Screen/Home/widget/stocks_card.dart';
+import 'package:nirogya/Screen/barcode%20scanner%20Bills/barcode_scanner_bills.dart';
 
 class Stocks extends StatefulWidget {
   const Stocks({super.key});
@@ -43,7 +49,9 @@ class _StocksState extends State<Stocks> {
                 borderRadius: BorderRadius.circular(25),
               ),
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  ShowDailog(context);
+                },
                 child: Text(
                   "Add Stocks",
                   style: TextStyle(
@@ -62,7 +70,10 @@ class _StocksState extends State<Stocks> {
                 borderRadius: BorderRadius.circular(25),
               ),
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => OrderStockPage()));
+                },
                 child: Text(
                   "Order Stock",
                   style: TextStyle(
@@ -79,5 +90,113 @@ class _StocksState extends State<Stocks> {
         Expanded(child: SearchStockWidget()),
       ],
     );
+  }
+
+  void ShowDailog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Select Option",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "Poppins",
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ScannerAddStock(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 120, // Fixed width for both containers
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xff920000),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Column(
+                            children: [
+                              Image.asset(
+                                'assets/images/scanner_icon.png',
+                                height: 50,
+                                width: 50,
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                "Scanner",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  fontFamily: "Poppins",
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          // Add logic for "Manually" option here
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (context) => ProductList()),
+                          );
+                        },
+                        child: Container(
+                          width: 120, // Fixed width for both containers
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xff920000),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Column(
+                            children: [
+                              Image.asset(
+                                'assets/images/Keyboard.png',
+                                height: 50,
+                                width: 50,
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                "Manually",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                  fontFamily: "Poppins",
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 }
