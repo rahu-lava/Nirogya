@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../Views & Controllers/Stock info Screen/stock_info_screen.dart';
+import '../Views/Stock info Screen/stock_info_screen.dart';
 
 class SearchStockWidget extends StatefulWidget {
   @override

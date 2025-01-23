@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../Views & Controllers/Sales Transaction Detail Screen/sales_transaction_detail_screen.dart';
+import '../Views/Sales Transaction Detail Screen/sales_transaction_detail_screen.dart';
 
 class SalesList extends StatefulWidget {
   @override

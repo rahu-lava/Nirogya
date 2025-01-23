@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:toasty_box/toast_enums.dart';
+import 'package:toasty_box/toast_service.dart';
 
 class CustomFilePicker extends StatefulWidget {
   final String label;
@@ -35,14 +37,32 @@ class _CustomFilePickerState extends State<CustomFilePicker> {
                 title: Text('Select from Gallery'),
                 onTap: () async {
                   Navigator.pop(context);
-                  final pickedFile = await ImagePicker().pickImage(
-                    source: ImageSource.gallery,
-                  );
-                  if (pickedFile != null) {
-                    setState(() {
-                      _selectedFilePath = pickedFile.path;
-                    });
-                    widget.onFileSelected(pickedFile.path);
+                  late final pickedFile;
+                  try {
+                    pickedFile = await ImagePicker().pickImage(
+                      source: ImageSource.gallery,
+                    );
+                  } on Exception catch (e) {
+                    ToastService.showErrorToast(
+                      context,
+                      length: ToastLength.medium,
+                      message: "Failed to pick the Image!",
+                    );
+                  }
+                  try {
+                    if (pickedFile != null) {
+                      setState(() {
+                        _selectedFilePath = pickedFile.path;
+                      });
+                      widget.onFileSelected(pickedFile.path);
+                    }
+                  } catch (e) {
+                    // TODO
+                    ToastService.showErrorToast(
+                      context,
+                      length: ToastLength.medium,
+                      message: "Failed to pick the Image! $e",
+                    );
                   }
                 },
               ),

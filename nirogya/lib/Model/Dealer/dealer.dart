@@ -12,7 +12,7 @@ class Dealer extends HiveObject {
 
   @HiveField(2)
   String gstin;
-
+ 
   @HiveField(3)
   bool hasWhatsApp;
 
@@ -22,4 +22,9 @@ class Dealer extends HiveObject {
     required this.gstin,
     required this.hasWhatsApp,
   });
+
+  
+
+
+
 }

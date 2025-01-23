@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../Views & Controllers/Purchase Transaction Screen/purchase_transactiondetails_screen.dart';
+import '../Views/Purchase Transaction Screen/purchase_transactiondetails_screen.dart';
 
 class PurchaseList extends StatefulWidget {
   @override

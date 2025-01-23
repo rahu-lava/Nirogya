@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nirogya/Views%20&%20Controllers/Added%20Product%20Screen/added_product_list.dart';
+import 'package:nirogya/Views/Added%20Product%20Screen/added_product_list.dart';
 
 class ConfirmationDialog extends StatelessWidget {
   @override

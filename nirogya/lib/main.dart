@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:nirogya/Provider/Auth/auth_provider.dart';
+import 'package:nirogya/View%20Model/Auth/auth_provider.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
-import 'package:nirogya/Provider/Dealer/dealer_provider.dart';
-import 'package:nirogya/Views%20&%20Controllers/Home/Page/bills.dart';
-import 'package:nirogya/Views%20&%20Controllers/Home/home.dart';
-import 'package:nirogya/Views%20&%20Controllers/Notification%20Screen/Notification_Screen.dart';
-import 'package:nirogya/Views%20&%20Controllers/Splash%20Screen/SplashScreen.dart';
+import 'package:nirogya/View%20Model/Dealer/dealer_provider.dart';
+import 'package:nirogya/Views/Home/Page/bills.dart';
+import 'package:nirogya/Views/Home/home.dart';
+import 'package:nirogya/Views/Notification%20Screen/Notification_Screen.dart';
+import 'package:nirogya/Views/Splash%20Screen/SplashScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 
