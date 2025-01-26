@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:nirogya/View%20Model/Auth/auth_provider.dart';
+import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 import 'package:nirogya/Widget/loading_widget.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
@@ -119,7 +119,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    AuthProvider authProvider = context.read<AuthProvider>();
+    AuthViewModel authProvider = context.read<AuthViewModel>();
     String number = authProvider.number;
     String maskedNumber = OtpController().morphPhoneNumber(number);
 

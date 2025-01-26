@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'medicine.g.dart';
 
-@HiveType(typeId: 1)
+@HiveType(typeId: 0)
 class Medicine extends HiveObject {
   @HiveField(0)
   String productName;

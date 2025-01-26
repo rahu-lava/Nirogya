@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:nirogya/View%20Model/Auth/auth_provider.dart';
+import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -106,7 +106,7 @@ class _IntroScreenState extends State<IntroScreen> {
   @override
   Widget build(BuildContext context) {
     // updateIsFirst();
-    AuthProvider authProvider = context.read<AuthProvider>();
+    AuthViewModel authProvider = context.read<AuthViewModel>();
     authProvider.setFirstTime();
 
     return Scaffold(

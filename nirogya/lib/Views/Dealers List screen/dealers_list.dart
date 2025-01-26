@@ -3,7 +3,7 @@ import 'package:nirogya/Views/Add%20Dealer%20Screen/add_dealer.dart';
 import 'package:provider/provider.dart';
 
 import '../../Model/Dealer/dealer.dart';
-import '../../View Model/Dealer/dealer_provider.dart';
+import '../../View Model/Dealer/dealer_view_model.dart';
 
 class OrderStockPage extends StatefulWidget {
   @override
@@ -11,11 +11,11 @@ class OrderStockPage extends StatefulWidget {
 }
 
 class _OrderStockPageState extends State<OrderStockPage> {
-  late DealerProvider dealerProvider;
+  late DealerViewModel dealerProvider;
   bool _isLoading = true;
 
   Future<List<Dealer>> fetchDealer(BuildContext context) async {
-    DealerProvider dealerProvider = context.read<DealerProvider>();
+    DealerViewModel dealerProvider = context.read<DealerViewModel>();
     await dealerProvider.fetchDealers();
     return dealerProvider.dealers;
   }
@@ -38,7 +38,7 @@ class _OrderStockPageState extends State<OrderStockPage> {
   }
 
   Future<void> _initializeDealers() async {
-    dealerProvider = context.read<DealerProvider>();
+    dealerProvider = context.read<DealerViewModel>();
     try {
       await dealerProvider.fetchDealers();
     } catch (e) {
@@ -54,7 +54,7 @@ class _OrderStockPageState extends State<OrderStockPage> {
   Widget build(BuildContext context) {
     // DealerProvider dealerProvider = context.read<DealerProvider>();
     // List<Dealer> dealers = dealerProvider.dealers;
-    final dealerProvider = Provider.of<DealerProvider>(context);
+    final dealerProvider = Provider.of<DealerViewModel>(context);
     // print(dealerProvider.dealers.length);
 
     return Scaffold(

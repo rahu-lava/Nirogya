@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
-import 'package:nirogya/Data/Dealer/dealer_controller.dart';
+import 'package:nirogya/Data/Dealer/dealer_repository.dart';
 
-class DealerProvider extends ChangeNotifier {
+class DealerViewModel extends ChangeNotifier {
   final DealerRepository _controller = DealerRepository();
   List<Dealer> _dealers = [];
   bool _status = false;
@@ -15,9 +15,9 @@ class DealerProvider extends ChangeNotifier {
     _dealers = await _controller.getAllDealers();
     notifyListeners(); // Notify the UI to rebuild
   }
-  
+
   Future<Dealer?> getDealerByKey(dynamic key) async {
-    Dealer? val =   await _controller.getDealerByKey(key);
+    Dealer? val = await _controller.getDealerByKey(key);
     return val;
     // return _dealers[key];
   }

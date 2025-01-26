@@ -7,10 +7,11 @@ import 'package:toasty_box/toast_enums.dart';
 import 'package:toasty_box/toast_service.dart';
 import '../../Model/Dealer/dealer.dart';
 import '../../Model/Medicine/medicine.dart';
-import '../../View Model/Dealer/dealer_provider.dart';
+import '../../View Model/Add Purchase/add_purchase_view_model.dart';
+import '../../View Model/Dealer/dealer_view_model.dart';
 import '../../Widget/image_picker.dart';
 import '../Add Dealer Screen/add_dealer.dart';
-import '../Purchase Product List/purchase_product_list.dart';
+import '../Purchase List/purchase_product_list.dart';
 
 class PurchaseBillPage extends StatefulWidget {
   @override
@@ -19,10 +20,10 @@ class PurchaseBillPage extends StatefulWidget {
 
 class _PurchaseBillPageState extends State<PurchaseBillPage> {
   String? selectedDealer;
-  late DealerProvider dealerProvider;
+  late DealerViewModel dealerProvider;
   bool _isLoading = true;
   String? expiryDate;
-  String? ImagePath;
+  String? imagePath;
   // String dateText = "MM/YYYY";
 
   final TextEditingController productNameController = TextEditingController();
@@ -34,7 +35,7 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
   final TextEditingController descriptionController = TextEditingController();
 
   Future<void> _initializeDealers() async {
-    dealerProvider = context.read<DealerProvider>();
+    dealerProvider = context.read<DealerViewModel>();
     try {
       await dealerProvider.fetchDealers();
     } catch (e) {
@@ -161,6 +162,7 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
                           isRequired: false,
                           onFileSelected: (path) {
                             // Handle the file path (e.g., upload or save)
+                            imagePath = path;
                             print("Selected File: $path");
                           },
                         ),
@@ -209,75 +211,21 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Add save functionality here
-                  if (productNameController.text.trim().isEmpty) {
-                    FocusScope.of(context).unfocus();
-                    ToastService.showErrorToast(context,
-                        length: ToastLength.medium,
-                        message: "Please enter the Product name.");
+                  final purchaseViewModel = context.read<PurchaseViewModel>();
 
-                    return;
-                  }
-                  if (priceController.text.trim().isEmpty) {
-                    FocusScope.of(context).unfocus();
-                    ToastService.showErrorToast(context,
-                        length: ToastLength.medium,
-                        message: "Please enter the Price.");
-                    return;
-                  }
-                  if (quantityController.text.trim().isEmpty) {
-                    FocusScope.of(context).unfocus();
-                    ToastService.showErrorToast(context,
-                        length: ToastLength.medium,
-                        message: "Please enter the Quantity.");
-                    return;
-                  }
-                  if (batchController.text.trim().isEmpty) {
-                    FocusScope.of(context).unfocus();
-                    ToastService.showErrorToast(context,
-                        length: ToastLength.medium,
-                        message: "Please enter the Batch.");
-                    return;
-                  }
-                  if (expiryDate == null) {
-                    FocusScope.of(context).unfocus();
-                    ToastService.showErrorToast(context,
-                        length: ToastLength.medium,
-                        message: "Please select the Expiry Date.");
-                    return;
-                  }
-                  if (selectedDealer == null) {
-                    FocusScope.of(context).unfocus();
-                    ToastService.showErrorToast(context,
-                        length: ToastLength.medium,
-                        message: "Please select the Dealer.");
-                    return;
-                  }
-                  final medicine = Medicine(
-                      productName: productNameController.text.trim(),
-                      price:
-                          double.tryParse(priceController.text.trim()) ?? 0.0,
-                      quantity: int.tryParse(priceController.text.trim()) ?? 0,
-                      expiryDate: expiryDate!,
-                      batch: batchController.text.trim(),
-                      dealerName: selectedDealer,
-                      imagePath: ImagePath,
-                      companyName: companyNameController.text.trim().isNotEmpty
-                          ? companyNameController.text.trim()
-                          : "-",
-                      alertQuantity:
-                          alertQuantityController.text.trim().isNotEmpty
-                              ? int.tryParse(priceController.text.trim())
-                              : 0,
-                      description: descriptionController.text.trim().isNotEmpty
-                          ? descriptionController.text.trim()
-                          : "-");
-
-                   DealerProvider dealerProvider = context.read<DealerProvider>();
-                   List<Dealer> dealers = dealerProvider.dealers;
-
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (context) => PurchaseProductList()));
+                  purchaseViewModel.saveProduct(
+                    context: context,
+                    productName: productNameController.text,
+                    price: priceController.text,
+                    quantity: quantityController.text,
+                    batch: batchController.text,
+                    expiryDate: expiryDate,
+                    dealerName: selectedDealer,
+                    imagePath: imagePath ?? "",
+                    companyName: companyNameController.text,
+                    alertQuantity: alertQuantityController.text,
+                    description: descriptionController.text,
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -301,7 +249,7 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
 
   Widget _buildDealerDropdown(BuildContext context) {
     // DealerProvider dealerProvider = context.read<DealerProvider>();
-    final dealerProvider = Provider.of<DealerProvider>(context);
+    final dealerProvider = Provider.of<DealerViewModel>(context);
     // print(taskProvider.dealers.length);
     List<Dealer> dealers = dealerProvider.dealers;
 

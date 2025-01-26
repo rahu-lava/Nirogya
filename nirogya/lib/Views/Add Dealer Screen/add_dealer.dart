@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
-import 'package:nirogya/View%20Model/Dealer/dealer_provider.dart';
+import 'package:nirogya/View%20Model/Dealer/dealer_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:toasty_box/toast_enums.dart';
 import 'package:toasty_box/toast_service.dart';
@@ -29,10 +29,10 @@ class _AddDealerScreenState extends State<AddDealerScreen> {
         hasWhatsApp: isWhatsAppSame,
       );
 
-      Provider.of<DealerProvider>(context, listen: false)
+      Provider.of<DealerViewModel>(context, listen: false)
           .addDealer(newDealer)
           .then((_) {
-        if (Provider.of<DealerProvider>(context, listen: false).status) {
+        if (Provider.of<DealerViewModel>(context, listen: false).status) {
           ToastService.showSuccessToast(
             context,
             length: ToastLength.medium,

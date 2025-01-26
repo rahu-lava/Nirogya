@@ -1,6 +1,6 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
-import 'package:nirogya/View%20Model/Auth/auth_provider.dart';
+import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Home/home.dart';
@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _controller,
       curve: Curves.easeInOut,
     ));
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthViewModel>(context, listen: false);
     late bool isLogged;
     late bool isFirstTime;
     _controller.forward();

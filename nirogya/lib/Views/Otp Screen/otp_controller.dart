@@ -2,7 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:nirogya/View%20Model/Auth/auth_provider.dart';
+import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 import '../Home/home.dart';
@@ -18,7 +18,7 @@ class OtpController {
   }
 
   Future<bool> onVerifyOtp(BuildContext context, String otp) async {
-    AuthProvider authProvider = context.read<AuthProvider>();
+    AuthViewModel authProvider = context.read<AuthViewModel>();
     Client client = authProvider.client;
 
     Account account = Account(client);

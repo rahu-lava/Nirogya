@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
 import 'package:provider/provider.dart';
-import '../../View Model/Dealer/dealer_provider.dart';
+import '../../View Model/Dealer/dealer_view_model.dart';
 import '../Notification Screen/Notification_Screen.dart';
 import 'Page/bills.dart';
 import 'Page/dashboard.dart';

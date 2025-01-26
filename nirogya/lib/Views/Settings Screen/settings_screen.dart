@@ -1,6 +1,6 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
-import 'package:nirogya/View%20Model/Auth/auth_provider.dart';
+import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:toasty_box/toast_enums.dart';
 import 'package:toasty_box/toast_service.dart';
@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool isNotificationOn = true;
 
   void _logOut() {
-    AuthProvider authProvider = context.read<AuthProvider>();
+    AuthViewModel authProvider = context.read<AuthViewModel>();
     Client client = authProvider.client;
     Account account = Account(client);
     authProvider.setLogged(false);

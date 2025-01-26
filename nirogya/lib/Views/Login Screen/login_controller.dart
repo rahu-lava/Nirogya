@@ -1,12 +1,12 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:nirogya/View%20Model/Auth/auth_provider.dart';
+import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 import 'package:provider/provider.dart';
 
 class LoginController {
   Future<bool> sendOtp(
       BuildContext context, String countryCode, String number) async {
-    AuthProvider authProvider = context.read<AuthProvider>();
+    AuthViewModel authProvider = context.read<AuthViewModel>();
 
     Client client = authProvider.client;
     final account = Account(client);

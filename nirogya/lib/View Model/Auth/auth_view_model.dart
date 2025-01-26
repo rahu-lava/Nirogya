@@ -2,7 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AuthProvider extends ChangeNotifier {
+class AuthViewModel extends ChangeNotifier {
   late Client _client;
   late Account _account;
   late String _userID;
@@ -11,7 +11,7 @@ class AuthProvider extends ChangeNotifier {
   bool _isFirstTime = true;
 
   // Constructor
-  AuthProvider() {
+  AuthViewModel() {
     print("AuthProvider Constructor");
     _client = Client();
     _client

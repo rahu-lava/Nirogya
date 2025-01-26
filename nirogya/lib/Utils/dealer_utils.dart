@@ -1,4 +1,4 @@
-import 'dealer.dart';
+import '../Model/Dealer/dealer.dart';
 
 class DealerUtils {
   // Format GSTIN for display

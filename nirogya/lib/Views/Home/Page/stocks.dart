@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nirogya/View%20Model/Dealer/dealer_provider.dart';
+import 'package:nirogya/View%20Model/Dealer/dealer_view_model.dart';
 import 'package:nirogya/Views/Add%20Stock%20Scanner/scanner_add_stock.dart';
 import 'package:nirogya/Views/AddProductBills/add_product_bills.dart';
 import 'package:nirogya/Views/Added%20Product%20Screen/added_product_list.dart';

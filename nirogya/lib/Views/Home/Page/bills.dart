@@ -6,7 +6,7 @@ import '../../../Widget/bills_card.dart';
 import '../../../Widget/purchase_list.dart';
 import '../../AddProductBills/add_product_bills.dart';
 import '../../Barcode Scanner Bills/barcode_scanner_bills.dart';
-import '../../PurchaseBillPage/purchase_bill_add_product.dart';
+import '../../Add Purchase Screen/purchase_bill_add_product.dart';
 
 class Bills extends StatefulWidget {
   const Bills({super.key});
@@ -20,15 +20,15 @@ class _BillsState extends State<Bills> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 10),
-        Row(
+        const SizedBox(height: 10),
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             BillsCard(title: "Sales \nToday", amount: "2k"),
             BillsCard(title: "Pending \nPayments", amount: "1.2k"),
           ],
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -43,7 +43,7 @@ class _BillsState extends State<Bills> {
                 onPressed: () {
                   _showDailog();
                 },
-                child: Text(
+                child: const Text(
                   "Customer Bill",
                   style: TextStyle(
                       color: Colors.white,
@@ -65,7 +65,7 @@ class _BillsState extends State<Bills> {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => PurchaseBillPage()));
                 },
-                child: Text(
+                child: const Text(
                   "Purchase Bill",
                   style: TextStyle(
                       color: Colors.white,
@@ -77,17 +77,17 @@ class _BillsState extends State<Bills> {
             ),
           ],
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         Expanded(
           child: DefaultTabController(
             length: 2,
             child: Column(
               children: [
-                TabBar(
+                const TabBar(
                   indicatorColor: Color(0xff920000),
                   indicatorSize: TabBarIndicatorSize.tab,
                   indicatorWeight: 4,
-                  labelColor: const Color.fromARGB(255, 128, 0, 0),
+                  labelColor: Color.fromARGB(255, 128, 0, 0),
                   unselectedLabelColor: Colors.grey,
                   labelStyle:
                       TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -108,7 +108,7 @@ class _BillsState extends State<Bills> {
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Expanded(
                   child: TabBarView(
                     children: [
@@ -140,7 +140,7 @@ class _BillsState extends State<Bills> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   "Select Option",
                   style: TextStyle(
                     fontSize: 18,
@@ -148,7 +148,7 @@ class _BillsState extends State<Bills> {
                     fontFamily: "Poppins",
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -163,7 +163,7 @@ class _BillsState extends State<Bills> {
                       },
                       child: Container(
                         width: 120, // Fixed width for both containers
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: const Color(0xff920000),
                           borderRadius: BorderRadius.circular(15),
@@ -175,8 +175,8 @@ class _BillsState extends State<Bills> {
                               height: 50,
                               width: 50,
                             ),
-                            SizedBox(height: 10),
-                            Text(
+                            const SizedBox(height: 10),
+                            const Text(
                               "Scanner",
                               style: TextStyle(
                                 fontSize: 14,
@@ -195,12 +195,12 @@ class _BillsState extends State<Bills> {
                         // Add logic for "Manually" option here
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (context) => AddProductBills()),
+                              builder: (context) => const AddProductBills()),
                         );
                       },
                       child: Container(
                         width: 120, // Fixed width for both containers
-                        padding: EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: const Color(0xff920000),
                           borderRadius: BorderRadius.circular(15),
@@ -212,8 +212,8 @@ class _BillsState extends State<Bills> {
                               height: 50,
                               width: 50,
                             ),
-                            SizedBox(height: 10),
-                            Text(
+                            const SizedBox(height: 10),
+                            const Text(
                               "Manually",
                               style: TextStyle(
                                 fontSize: 14,
