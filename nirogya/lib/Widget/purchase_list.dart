@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../Data/Bill/bill_repository.dart';
+import '../Model/Medicine/medicine.dart';
 import '../Views/Purchase Transaction Screen/purchase_transactiondetails_screen.dart';
+import '../../Model/Bill/bill.dart';
 
 class PurchaseList extends StatefulWidget {
   @override
@@ -9,30 +12,40 @@ class PurchaseList extends StatefulWidget {
 
 class _PurchaseListState extends State<PurchaseList> {
   TextEditingController _searchController = TextEditingController();
-  List<Map<String, String>> purchases = [
-    {'id': 'NIR12a456', 'amount': '\$300.00', 'date': '2024-01-01'},
-    {'id': 'NIR12b789', 'amount': '\$150.25', 'date': '2024-01-05'},
-    {'id': 'NIR12c012', 'amount': '\$89.99', 'date': '2024-01-10'},
-    {'id': 'NIR12d345', 'amount': '\$200.75', 'date': '2024-01-15'},
-    {'id': 'NIR12e678', 'amount': '\$50.50', 'date': '2024-01-20'},
-    // Add more purchase data as needed
-  ];
-
-  List<Map<String, String>> filteredPurchases = [];
+  List<Bill> bills = [];
+  List<Bill> filteredBills = [];
 
   @override
   void initState() {
     super.initState();
-    filteredPurchases = purchases;
+    _loadBills();
   }
 
-  void _filterPurchases(String query) {
+  Future<void> _loadBills() async {
+    List<Bill> allBills = await BillRepository.getAllBills();
     setState(() {
-      filteredPurchases = purchases
-          .where((purchase) =>
-              purchase['id']!.toLowerCase().contains(query.toLowerCase()))
+      bills = allBills;
+      filteredBills = allBills;
+    });
+  }
+
+  void _filterBills(String query) {
+    setState(() {
+      filteredBills = bills
+          .where((bill) =>
+              bill.invoiceNumber.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
+  }
+
+  double _calculateTotalAmount(List<Medicine> medicines) {
+    double totalAmount = 0.0;
+    for (var medicine in medicines) {
+      double priceWithoutGST = medicine.price * medicine.quantity;
+      double gstAmount = priceWithoutGST * (medicine.gst / 100);
+      totalAmount += priceWithoutGST + gstAmount;
+    }
+    return totalAmount;
   }
 
   @override
@@ -45,17 +58,17 @@ class _PurchaseListState extends State<PurchaseList> {
             height: 50,
             child: TextField(
               controller: _searchController,
-              cursorColor: const Color(0xff8B0000), // Dark Red
+              cursorColor: const Color(0xff8B0000),
               inputFormatters: [
                 FilteringTextInputFormatter.singleLineFormatter,
                 LengthLimitingTextInputFormatter(9),
               ],
-              onChanged: _filterPurchases,
+              onChanged: _filterBills,
               decoration: const InputDecoration(
-                hintText: 'NIR123456',
+                hintText: 'Search Invoice Number',
                 prefixIcon: Icon(
                   Icons.search,
-                  color: Color(0xff8B0000), // Dark Red for icon
+                  color: Color(0xff8B0000),
                 ),
                 border: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey),
@@ -72,14 +85,16 @@ class _PurchaseListState extends State<PurchaseList> {
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: filteredPurchases.length,
+            itemCount: filteredBills.length,
             itemBuilder: (context, index) {
-              var purchase = filteredPurchases[index];
+              var bill = filteredBills[index];
+              double totalAmount = _calculateTotalAmount(bill.medicines);
+
               return Container(
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: Colors.red.withOpacity(0.8), // Red border
+                      color: Colors.red.withOpacity(0.8),
                       width: 0.5,
                     ),
                   ),
@@ -88,35 +103,53 @@ class _PurchaseListState extends State<PurchaseList> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: ListTile(
                     title: Text(
-                      purchase['id']!,
+                      bill.invoiceNumber,
                       style: TextStyle(
                           fontSize: 24,
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.w500),
                     ),
                     subtitle: Text(
-                      '${purchase['date']}',
+                      '${bill.date.toLocal()}'.split(' ')[0],
                       style: TextStyle(
                           fontSize: 16,
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.w400),
                     ),
                     trailing: Text(
-                      purchase['amount']!,
+                      '₹${totalAmount.toStringAsFixed(2)}',
                       style: TextStyle(
                           fontSize: 18,
                           fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w300),
+                          fontWeight: FontWeight.w500),
                     ),
                     onTap: () {
-                      // Navigate to PurchaseTransactionDetailsScreen
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              PurchaseTransactionDetailsScreen(),
+                              PurchaseTransactionDetailsScreen(
+                            supplierName: bill.dealerName,
+                            supplierContact: bill.dealerContact,
+                            gstin: bill.gstNumber,
+                            medicines: bill.medicines
+                                .map((medicine) => {
+                                      "name": medicine.productName,
+                                      "price": medicine.price.toString(),
+                                      "quantity": medicine.quantity.toString(),
+                                      "batch": medicine.batch,
+                                      "expiry": medicine.expiryDate,
+                                    })
+                                .toList(),
+                            transactionId: bill.invoiceNumber,
+                            totalAmount: totalAmount.toString(),
+                            paymentMode: "-",
+                          ),
                         ),
-                      );
+                      ).then((_) {
+                        // Refresh the bill list after returning from the detail screen
+                        _loadBills();
+                      });
                     },
                   ),
                 ),

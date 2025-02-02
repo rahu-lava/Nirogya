@@ -3,26 +3,33 @@ import 'package:nirogya/Model/Medicine/medicine.dart';
 import 'package:nirogya/Data/Medicine/medicine_repository.dart';
 
 class MedicineViewModel extends ChangeNotifier {
-  final MedicineRepository _controller = MedicineRepository();
+  final MedicineRepository medicineRepo = MedicineRepository();
   List<Medicine> _medicines = [];
+  // List<Medicine> _temp_medicines = [];
   bool _status = false;
 
   List<Medicine> get medicines => _medicines;
+  // List<Medicine> get tempMedicines => _temp_medicines;
   bool get status => _status;
   bool get isEmpty => _medicines.isEmpty;
 
+  // Future<void> saveTempMeds(Medicine medicine) async {
+  //   _temp_medicines.add(medicine);
+  //   notifyListeners();
+  // }
+
   Future<void> fetchMedicines() async {
-    _medicines = await _controller.getAllMedicines();
+    _medicines = await medicineRepo.getAllMedicines();
     notifyListeners(); // Notify the UI to rebuild
   }
 
   Future<Medicine?> getMedicineByKey(dynamic key) async {
-    return await _controller.getMedicineByKey(key);
+    return await medicineRepo.getMedicineByKey(key);
   }
 
   Future<void> addMedicine(Medicine medicine) async {
     try {
-      await _controller.addMedicine(medicine);
+      await medicineRepo.addMedicine(medicine);
       _status = true;
     } catch (e) {
       print(e);
@@ -33,7 +40,7 @@ class MedicineViewModel extends ChangeNotifier {
 
   Future<void> updateMedicine(dynamic key, Medicine updatedMedicine) async {
     try {
-      await _controller.updateMedicine(key, updatedMedicine);
+      await medicineRepo.updateMedicine(key, updatedMedicine);
       _status = true;
     } catch (e) {
       print(e);
@@ -44,7 +51,7 @@ class MedicineViewModel extends ChangeNotifier {
 
   Future<void> deleteMedicine(dynamic key) async {
     try {
-      await _controller.deleteMedicine(key);
+      await medicineRepo.deleteMedicine(key);
       _status = true;
     } catch (e) {
       print(e);
@@ -55,7 +62,7 @@ class MedicineViewModel extends ChangeNotifier {
 
   Future<void> clearAllMedicines() async {
     try {
-      await _controller.clearAllMedicines();
+      await medicineRepo.clearAllMedicines();
       _status = true;
       _medicines = [];
     } catch (e) {

@@ -5,6 +5,7 @@ import 'package:nirogya/Views/About%20us%20Screen/about_us_screen.dart';
 import 'package:nirogya/Views/Attendence%20Screen/attendence_screen.dart';
 import 'package:nirogya/Views/Download%20Screen/download_screen.dart';
 import 'package:nirogya/Views/Edit%20Profile%20Screen/edit_profile_screen.dart';
+import 'package:nirogya/Views/Medicine%20Queue%20Screen/medicine_queue_screen.dart';
 import 'package:nirogya/Widget/staff_list.dart';
 import 'package:nirogya/Views/Settings%20Screen/settings_screen.dart';
 import 'package:nirogya/Views/Subscription%20Screen/subscription_screen.dart';
@@ -88,6 +89,14 @@ class _ProfileState extends State<Profile> {
                   },
                   child:
                       _buildOption("assets/images/Downloads.png", 'Download')),
+              const SizedBox(height: 10),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => MedicineQueueScreen()));
+                  },
+                  child:
+                      _buildOption("assets/icons/Box.png", 'Medicine Queue')),
               const SizedBox(height: 10),
               GestureDetector(
                   onTap: () {

@@ -1,22 +1,25 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:nirogya/Utils/permission_handler.dart';
-import 'package:nirogya/Utils/testing_utils.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:nirogya/Utils/custom_pdf.dart';
+
+import 'package:nirogya/View%20Model/Add%20Purchase/add_purchase_view_model.dart';
+
+import 'package:nirogya/Views/Home/home.dart';
+
 import 'package:provider/provider.dart';
 import 'package:nirogya/View%20Model/Purchase%20List/purchase_list_view_model.dart';
 import 'package:nirogya/Views/Add%20Purchase%20Screen/purchase_bill_add_product.dart';
 import 'package:toasty_box/toast_enums.dart';
 import 'package:toasty_box/toast_service.dart';
 
-import '../../Utils/bill_utils.dart';
+import '../../Model/Medicine/medicine.dart';
 
 class PurchaseProductList extends StatelessWidget {
   final purchaseListViewModel = PurchaseListViewModel();
 
   @override
   Widget build(BuildContext context) {
+    final purchaseViewModel = context.read<PurchaseViewModel>();
+
     // await purchaseListViewModel.fetchMedicineQueue();
 
     return Scaffold(
@@ -25,7 +28,7 @@ class PurchaseProductList extends StatelessWidget {
         title: const Text("Purchase Products"),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => CancelAction(context, purchaseViewModel),
             child: const Text(
               "Cancel",
               style: TextStyle(
@@ -47,7 +50,7 @@ class PurchaseProductList extends StatelessWidget {
                 // Add Manually Button
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
                         builder: (context) => PurchaseBillPage()));
                   },
                   style: ElevatedButton.styleFrom(
@@ -69,16 +72,15 @@ class PurchaseProductList extends StatelessWidget {
                 Expanded(
                   child: Consumer<PurchaseListViewModel>(
                     builder: (context, viewModel, child) {
-                      TestingUtils.printAllMedicines(viewModel.medicineQueue);
-                      if (viewModel.medicineQueue.isEmpty) {
+                      if (viewModel.isTempQueueEmpty) {
                         return const Center(
                           child: Text("No medicines in the queue."),
                         );
                       }
                       return ListView.builder(
-                        itemCount: viewModel.medicineQueue.length,
+                        itemCount: viewModel.tempMedicineQueue.length,
                         itemBuilder: (context, index) {
-                          final medicine = viewModel.medicineQueue[index];
+                          final medicine = viewModel.tempMedicineQueue[index];
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             child: Padding(
@@ -170,8 +172,11 @@ class PurchaseProductList extends StatelessWidget {
                 children: [
                   // Proceed Button
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Add action for "Proceed"
+                      // List<Medicine> tempMeds = PurchaseViewModel.tempMedicines;
+                      purchaseViewModel.transferProductToQueue();
+
                       ToastService.showSuccessToast(context,
                           length: ToastLength.medium,
                           message: "Products added in the queue");
@@ -200,11 +205,23 @@ class PurchaseProductList extends StatelessWidget {
         ],
       ),
     );
+
+    // CancelAction() {
+    //   purchaseViewModel.clearProduct();
+    //   Navigator.pushReplacement(
+    //       context, MaterialPageRoute(builder: (context) => const Bills()));
+    // }
+  }
+
+  CancelAction(context, purchaseViewModel) {
+    purchaseViewModel.clearProduct();
+    Navigator.pop(context);
   }
 }
 
 void _showDailog(BuildContext context) {
   showDialog(
+    barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
       return Dialog(
@@ -229,8 +246,16 @@ void _showDailog(BuildContext context) {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       // WhatsApp action here
+
+                      // Generate the PDF
+                      await generatePurchaseBillPdfBytes(true);
+
+                      // Pop the navigation stack
+                      Navigator.of(context).pop();
+
+                      Navigator.of(context).pop();
                     },
                     child: Container(
                       width: 120, // Fixed width for both containers
@@ -262,25 +287,31 @@ void _showDailog(BuildContext context) {
                   ),
                   GestureDetector(
                     onTap: () async {
-                      // Request permissions before printing
-                      PermissionStatus status = await Permission.storage.status;
+                      // Define the list of items
+                      List<Map<String, dynamic>> items = [
+                        {
+                          'name': 'Paracetamol',
+                          'pricePerUnit': 50.0,
+                          'quantity': 10,
+                          'gst': 12,
+                          'expiry': '2025-12-31'
+                        },
+                        {
+                          'name': 'Vitamin C Tablets',
+                          'pricePerUnit': 100.0,
+                          'quantity': 5,
+                          'gst': 18,
+                          'expiry': '2024-06-15'
+                        },
+                      ];
 
-                      if (status.isGranted) {
-                        // Permission granted, proceed with printing
-                        final billItems = [
-                          {'name': 'Item 1', 'quantity': 2, 'price': 10.0},
-                          {'name': 'Item 2', 'quantity': 1, 'price': 15.0},
-                        ];
-                        await generateBillPdf(context, billItems, false);
-                      } else {
-                        // Permission denied, show a message
-                        ToastService.showErrorToast(context,
-                            length: ToastLength.medium,
-                            message: "Permission to print is required.");
-                      }
+                      // Generate the PDF
+                      await generatePurchaseBillPdfBytes(false);
+
+                      // Pop the navigation stack
+                      Navigator.of(context).pop();
 
                       Navigator.of(context).pop();
-                      PermissionHandlerUtil.requestPermissions(context);
                     },
                     child: Container(
                       width: 120, // Fixed width for both containers

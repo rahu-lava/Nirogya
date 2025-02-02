@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:nirogya/Utils/save_image_util.dart';
 import 'package:provider/provider.dart';
 import 'package:toasty_box/toast_enums.dart';
 import 'package:toasty_box/toast_service.dart';
@@ -11,6 +12,7 @@ import '../../View Model/Add Purchase/add_purchase_view_model.dart';
 import '../../View Model/Dealer/dealer_view_model.dart';
 import '../../Widget/image_picker.dart';
 import '../Add Dealer Screen/add_dealer.dart';
+import '../Home/home.dart';
 import '../Purchase List/purchase_product_list.dart';
 
 class PurchaseBillPage extends StatefulWidget {
@@ -33,9 +35,11 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
   final TextEditingController companyNameController = TextEditingController();
   final TextEditingController alertQuantityController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController gstController = TextEditingController();
 
   Future<void> _initializeDealers() async {
     dealerProvider = context.read<DealerViewModel>();
+    selectedDealer = PurchaseViewModel.currentDealer;
     try {
       await dealerProvider.fetchDealers();
     } catch (e) {
@@ -153,17 +157,27 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildDealerDropdown(context),
+                        child: _buildInputFieldNum(
+                            label: "GST %",
+                            hintText: "e.g., 5",
+                            required: true,
+                            controller: gstController),
                       ),
+                      // Expanded(
+                      //   child: _buildDealerDropdown(context),
+                      // ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: CustomFilePicker(
                           label: "Image (Upload)",
                           isRequired: false,
-                          onFileSelected: (path) {
+                          onFileSelected: (path) async {
                             // Handle the file path (e.g., upload or save)
                             imagePath = path;
+                            imagePath = await SaveImageUtil()
+                                .saveImage("product", path!);
                             print("Selected File: $path");
+                            // print("Saved File Path: $newPath");
                           },
                         ),
                       ),
@@ -210,10 +224,10 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
             child: Container(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final purchaseViewModel = context.read<PurchaseViewModel>();
 
-                  purchaseViewModel.saveProduct(
+                  await purchaseViewModel.saveTempProduct(
                     context: context,
                     productName: productNameController.text,
                     price: priceController.text,
@@ -221,6 +235,7 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
                     batch: batchController.text,
                     expiryDate: expiryDate,
                     dealerName: selectedDealer,
+                    gst: gstController.text,
                     imagePath: imagePath ?? "",
                     companyName: companyNameController.text,
                     alertQuantity: alertQuantityController.text,
@@ -440,7 +455,8 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
 
             if (pickedDate != null) {
               setState(() {
-                expiryDate = DateFormat("DD/MM/yyyy").format(pickedDate);
+                expiryDate = DateFormat("dd/MM/yyyy")
+                    .format(pickedDate); // Corrected format
               });
             }
           },

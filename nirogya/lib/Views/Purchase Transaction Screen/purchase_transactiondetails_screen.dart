@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:nirogya/Utils/transaction_bill_pdf.dart';
 
 class PurchaseTransactionDetailsScreen extends StatelessWidget {
-  final List<Map<String, String>> medicines = [
-    {
-      "name": "Ibuprofen",
-      "price": "80",
-      "quantity": "10",
-      "batch": "B123",
-      "expiry": "12/2025"
-    },
-    {
-      "name": "Amoxicillin",
-      "price": "150",
-      "quantity": "5",
-      "batch": "A789",
-      "expiry": "08/2024"
-    },
-    {
-      "name": "Cetirizine",
-      "price": "30",
-      "quantity": "20",
-      "batch": "C456",
-      "expiry": "04/2025"
-    },
-  ];
+  final String supplierName;
+  final String supplierContact;
+  final String gstin;
+  final String transactionId;
+  final List<Map<String, String>> medicines;
+  final String paymentMode;
+  final String totalAmount;
+
+  const PurchaseTransactionDetailsScreen({
+    Key? key,
+    required this.supplierName,
+    required this.supplierContact,
+    required this.gstin,
+    required this.transactionId,
+    required this.medicines,
+    required this.paymentMode,
+    required this.totalAmount,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,27 +43,28 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      "Rahul Pharma Pvt. Ltd.",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      supplierName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Text(
-                      "9876543210",
-                      style: TextStyle(fontSize: 14),
+                      supplierContact,
+                      style: const TextStyle(fontSize: 14),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Text(
-                      "GSTIN: 22AAAAA0000A1Z5",
-                      style: TextStyle(fontSize: 14),
+                      "GSTIN: $gstin",
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ],
                 ),
-                const Text(
-                  "#TXN67890",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                Text(
+                  "$transactionId",
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -158,15 +155,15 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       "Payment Mode",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "Online",
-                      style: TextStyle(
+                      paymentMode,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -175,15 +172,15 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       "Total Amount",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "₹470",
-                      style: TextStyle(
+                      "₹$totalAmount",
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.green,
@@ -201,8 +198,7 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Implement download functionality
-                      print("Download pressed");
+                      generateTransactionBillPdfBytes(true, transactionId);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -212,7 +208,7 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      "Download",
+                      "Share",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -224,8 +220,7 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // Implement share functionality
-                      print("Share pressed");
+                      generateTransactionBillPdfBytes(false, transactionId);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -235,7 +230,7 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      "Share",
+                      "Print",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

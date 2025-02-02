@@ -1,18 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PermissionHandlerUtil {
   static Future<void> requestPermissions(BuildContext context) async {
-    // Request permissions directly
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
-      Permission.storage,
-    ].request();
+    if (kIsWeb) {
+      return; // Skip permission requests on the web
+    }
 
-    // Check if any permission is denied
-    if (statuses.values
-        .any((status) => status.isDenied || status.isPermanentlyDenied)) {
-      // Show dialog if any permission is denied
+    // Request camera permission
+    var cameraStatus = await Permission.camera.request();
+
+    // Check if camera permission is denied
+    if (cameraStatus.isDenied || cameraStatus.isPermanentlyDenied) {
+      // Show dialog if camera permission is denied
       _showPermissionDialog(context);
     }
   }
@@ -22,15 +23,15 @@ class PermissionHandlerUtil {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text("Permissions Required"),
+        title: const Text("Camera Permission Required"),
         content: const Text(
-          "We need camera and storage permissions to proceed. Please grant the required permissions.",
+          "We need camera permission to proceed. Please grant the required permission.",
         ),
         actions: [
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop(); // Close the dialog
-              await _requestAllPermissions(); // Request permissions again
+              await _requestCameraPermission(); // Request permission again
             },
             child: const Text("Allow"),
           ),
@@ -46,10 +47,7 @@ class PermissionHandlerUtil {
     );
   }
 
-  static Future<void> _requestAllPermissions() async {
-    await [
-      Permission.camera,
-      Permission.storage,
-    ].request(); // Request all ungranted permissions in one step
+  static Future<void> _requestCameraPermission() async {
+    await Permission.camera.request(); // Request camera permission
   }
 }

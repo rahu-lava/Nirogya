@@ -1,9 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nirogya/View%20Model/Add%20Purchase/add_purchase_view_model.dart';
+import 'package:provider/provider.dart';
+import 'package:toasty_box/toast_enums.dart';
+import 'package:toasty_box/toast_service.dart';
+import '../../../Model/Dealer/dealer.dart';
+import '../../../View Model/Dealer/dealer_view_model.dart';
+import '../../../View Model/Purchase List/purchase_list_view_model.dart';
 import '../../../Widget/Sales_list.dart';
 import '../../../Widget/bills_card.dart';
 import '../../../Widget/purchase_list.dart';
+import '../../Add Dealer Screen/add_dealer.dart';
 import '../../AddProductBills/add_product_bills.dart';
 import '../../Barcode Scanner Bills/barcode_scanner_bills.dart';
 import '../../Add Purchase Screen/purchase_bill_add_product.dart';
@@ -16,6 +24,25 @@ class Bills extends StatefulWidget {
 }
 
 class _BillsState extends State<Bills> {
+  late DealerViewModel dealerProvider;
+  String? selectedDealer;
+
+  Future<void> _initializeDealers() async {
+    dealerProvider = context.read<DealerViewModel>();
+    try {
+      await dealerProvider.fetchDealers();
+    } catch (e) {
+      print("Error fetching dealers: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDealers();
+    // fetchDealer(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -62,8 +89,7 @@ class _BillsState extends State<Bills> {
               ),
               child: TextButton(
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PurchaseBillPage()));
+                  _showDealerDialog(context);
                 },
                 child: const Text(
                   "Purchase Bill",
@@ -233,6 +259,154 @@ class _BillsState extends State<Bills> {
           ),
         );
       },
+    );
+  }
+
+  void _showDealerDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Select Dealer",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "Poppins",
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildDealerDropdown(context),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                          fontFamily: "Poppins",
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        print(selectedDealer);
+                        if (selectedDealer != "Add New Dealer" &&
+                            selectedDealer != "") {
+                          PurchaseViewModel.setCurrentDealer(
+                              currentDealer: selectedDealer!);
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => PurchaseBillPage(),
+                            ),
+                          );
+                        } else {
+                          ToastService.showWarningToast(context,
+                              message: "Select Dealer First",
+                              length: ToastLength.medium);
+                        }
+                      },
+                      child: const Text(
+                        "Proceed",
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 16,
+                          fontFamily: "Poppins",
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDealerDropdown(BuildContext context) {
+    final dealerProvider = Provider.of<DealerViewModel>(context);
+    List<Dealer> dealers = dealerProvider.dealers;
+    Dealer dealerAdd = Dealer(
+        name: "Add New Dealer",
+        contactNumber: "1234567890",
+        gstin: "gstin",
+        hasWhatsApp: false);
+    List<Dealer> dealer = [dealerAdd];
+
+    dealers += dealer;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Label for the dropdown
+        const Text.rich(
+          TextSpan(
+            text: "Dealer Name",
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            children: [
+              TextSpan(
+                text: " *",
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5), // Space between label and dropdown
+
+        // Dropdown field
+        DropdownButtonFormField<String>(
+          value: selectedDealer,
+          decoration: InputDecoration(
+            hintText: "Select Dealer",
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.red.shade200, width: 1),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 10,
+            ),
+          ),
+          items: dealers.map((dealer) {
+            return DropdownMenuItem<String>(
+              value: dealer.name,
+              child: Text(dealer.name),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value == "Add New Dealer") {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const AddDealerScreen()),
+              );
+            } else {
+              setState(() {
+                print(value);
+                selectedDealer = value;
+              });
+            }
+          },
+        ),
+      ],
     );
   }
 }

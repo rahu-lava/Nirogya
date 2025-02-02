@@ -1,35 +1,35 @@
 import 'dart:io';
-// import 'dart:js';
-
-import 'package:nirogya/Utils/share_file.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:universal_html/html.dart' as html;
-import 'dart:typed_data';
+import 'package:nirogya/Utils/print_pdf.dart'; // Ensure this is your print utility
+import 'package:nirogya/Utils/share_file.dart'; // Ensure this is your share utility
 
-import 'package:universal_html/js.dart';
-
-class WebPdfDownloader {
-  static webpdfDownload(bytes) async {
-    if (Platform.isIOS) {
-      // iOS
+class MobilePdfDownloader {
+  static Future<void> mobilePdfDownload(List<int> bytes, bool isShare) async {
+    try {
+      // Get the app's documents directory
       final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/bill.pdf';
-      final file = File(filePath);
-      await file.writeAsBytes(bytes);
-
-      // Share the file
-      // await Share.shareXFiles([XFile(filePath)], text: 'Here is your bill');
-    } else if (Platform.isAndroid) {
-      final directory = await getApplicationDocumentsDirectory();
-
-      // // final Directory? filePath = '${directory.path}/bill.pdf';
       final String filePath = "${directory.path}/bill.pdf";
 
+      // Save the PDF file
       final File file = File(filePath);
-      // FileSaveUtil.saveFile(context, bytes, "bill2.pdf");
-      print('PDF saved at: $filePath');
+      await file.writeAsBytes(bytes);
 
-      shareFile(filePath);
+      // Ensure the file exists
+      if (await file.exists()) {
+        print('PDF saved at: $filePath');
+
+        if (isShare) {
+          // Share the PDF
+          shareFile(filePath);
+        } else {
+          // Print the PDF
+          printPdf(filePath);
+        }
+      } else {
+        print('File not found after saving at: $filePath');
+      }
+    } catch (e) {
+      print('Error while saving, sharing, or printing PDF: $e');
     }
   }
 }

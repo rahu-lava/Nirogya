@@ -3,8 +3,14 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
+import 'package:nirogya/Views/Add%20Stock%20Scanner/scanner_add_stock.dart';
+import 'package:nirogya/Views/Barcode%20Scanner%20Bills/barcode_scanner_bills.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'package:toasty_box/toast_enums.dart';
+import 'package:toasty_box/toast_service.dart';
 import '../../View Model/Dealer/dealer_view_model.dart';
+import '../Edit Profile Screen/edit_profile_screen.dart';
 import '../Notification Screen/Notification_Screen.dart';
 import 'Page/bills.dart';
 import 'Page/dashboard.dart';
@@ -12,7 +18,9 @@ import 'Page/profile.dart';
 import 'Page/stocks.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int initialIndex;
+
+  const HomePage({super.key, this.initialIndex = 0});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -20,14 +28,43 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final PageController NavController = PageController();
-
-  var _selectedIndex = 0;
+  late int _selectedIndex;
   double _buttonOffset = 7.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex; // Set the initial index
+    _checkProfileStatus(); // Check if profile is set
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NavController.jumpToPage(_selectedIndex);
+    });
+  }
+
+  Future<void> _checkProfileStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool? profileStatus =
+        prefs.getBool('isProfileSet'); // Get the 'isProfileSet' flag
+
+    if (profileStatus == null || !profileStatus) {
+      // If profile is not set, navigate to profile setup screen
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => const EditProfileScreen(), // Create this screen
+      ));
+
+      ToastService.showWarningToast(context,
+          length: ToastLength.medium,
+          message: "Set Profile Details To Proceed");
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+
+    // Animate to the selected page
     NavController.animateToPage(
       index,
       duration: const Duration(milliseconds: 500),
@@ -37,7 +74,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.white,
@@ -46,6 +82,7 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         appBar: AppBar(
           elevation: 4,
+          leading: null,
           title: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5.0),
             child: Image.asset(
@@ -77,6 +114,12 @@ class _HomePageState extends State<HomePage> {
               PageView(
                 controller: NavController,
                 physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (index) {
+                  setState(() {
+                    _selectedIndex =
+                        index; // Update the selected index when the page changes
+                  });
+                },
                 children: [
                   NotificationListener<ScrollNotification>(
                     onNotification: (scrollNotification) {
@@ -113,7 +156,8 @@ class _HomePageState extends State<HomePage> {
                 right: 5,
                 child: GestureDetector(
                   onTap: () {
-                    print("Custom floating button tapped");
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => BarcodeScannerWithList()));
                   },
                   child: Container(
                     height: 60,

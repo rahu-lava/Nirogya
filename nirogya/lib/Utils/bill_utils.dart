@@ -1,201 +1,119 @@
-import 'dart:ffi';
-import 'dart:typed_data';
-import 'dart:io';
-import 'package:flutter/foundation.dart'; // For kIsWeb.
-import 'package:flutter/material.dart';
-import 'package:nirogya/Utils/mobilePdfDownloader.dart';
-import 'package:nirogya/Utils/share_file.dart';
-import 'package:permission_handler/permission_handler.dart'; // For permission handling.
-import 'package:share_plus/share_plus.dart'; // For iOS sharing.
-import 'package:path_provider/path_provider.dart'; // For saving files locally.
-import 'package:syncfusion_flutter_pdf/pdf.dart'; // For generating PDFs.
-import 'package:universal_html/html.dart'
-    as html; // For web-specific functionality.
-import 'package:document_file_save_plus/document_file_save_plus.dart';
+// import 'package:flutter/foundation.dart'; // For kIsWeb.
+// import 'package:flutter/material.dart';
+// import 'package:nirogya/Utils/mobilePdfDownloader.dart';
+// import 'package:nirogya/Utils/webPdfDownloader.dart';
+// import 'package:syncfusion_flutter_pdf/pdf.dart';
+// import 'dart:typed_data';
+// import 'dart:ui';
 
-Future<void> generateBillPdf(
-    BuildContext context, List<Map<String, dynamic>> items , bool isShare) async {
-  // Request necessary permissions for platforms (e.g., Android).
+// Future<void> generatePurchaseBillPdf(BuildContext context,
+//     List<Map<String, dynamic>> items, bool isShare) async {
+//   // Create a PDF document.
+//   final PdfDocument document = PdfDocument();
 
-  // Create a PDF document.
-  final PdfDocument document = PdfDocument();
+//   // Add a page to the document.
+//   final PdfPage page = document.pages.add();
 
-  // Add a page to the document.
-  final PdfPage page = document.pages.add();
+//   // Get the graphics for the page.
+//   final PdfGraphics graphics = page.graphics;
 
-  // Draw text on the page.
-  page.graphics.drawString(
-    'Your Company Name',
-    PdfStandardFont(PdfFontFamily.helvetica, 20, style: PdfFontStyle.bold),
-    brush: PdfSolidBrush(PdfColor(0, 0, 0)),
-    bounds: const Rect.fromLTWH(0, 0, 0, 0),
-  );
+//   // Add Nirogya logo at the top center.
+//   const String logoText = "Nirogya";
+//   graphics.drawString(
+//     logoText,
+//     PdfStandardFont(PdfFontFamily.helvetica, 25, style: PdfFontStyle.bold),
+//     brush: PdfSolidBrush(PdfColor(0, 0, 0)),
+//     bounds: const Rect.fromLTWH(200, 10, 300, 40),
+//     format: PdfStringFormat(alignment: PdfTextAlignment.center),
+//   );
 
-  // Create a table.
-  final PdfGrid table = PdfGrid();
-  table.columns.add(count: 3);
+//   // Draw seller and buyer details.
+//   graphics.drawString(
+//     'Dealer Details:\nName: Dealer XYZ\nGSTIN: 27XXXXXXXXXXZ5\nContact: +91XXXXXXXXXX',
+//     PdfStandardFont(PdfFontFamily.helvetica, 12),
+//     bounds: const Rect.fromLTWH(10, 60, 250, 80),
+//   );
 
-  // Add header row.
-  final PdfGridRow header = table.headers.add(1)[0];
-  header.cells[0].value = 'Item';
-  header.cells[1].value = 'Quantity';
-  header.cells[2].value = 'Price';
+//   graphics.drawString(
+//     'Shop Details:\nName: Buyer ABC\nGSTIN: 27XXXXXXXXXXZ5',
+//     PdfStandardFont(PdfFontFamily.helvetica, 12),
+//     bounds: const Rect.fromLTWH(300, 60, 250, 80),
+//   );
 
-  // Add data rows.
-  for (var item in items) {
-    final PdfGridRow row = table.rows.add();
-    row.cells[0].value = item['name'];
-    row.cells[1].value = item['quantity'].toString();
-    row.cells[2].value = '\$${item['price'].toStringAsFixed(2)}';
-  }
+//   // Add invoice details.
+//   graphics.drawString(
+//     'Invoice No: INV12345\nDate: ${DateTime.now().toString().split(' ')[0]}',
+//     PdfStandardFont(PdfFontFamily.helvetica, 12),
+//     bounds: const Rect.fromLTWH(10, 140, 500, 20),
+//   );
 
-  // Draw the table.
-  table.draw(
-    page: page,
-    bounds: const Rect.fromLTWH(0, 50, 0, 0),
-  );
+//   // Create the product table.
+//   final PdfGrid table = PdfGrid();
+//   table.columns.add(count: 6);
 
-  // Save the document.
-  List<int> bytes = await document.save();
-  document.dispose();
+//   // Add header row with dark red background and white text.
+//   final PdfGridRow header = table.headers.add(1)[0];
+//   header.style.backgroundBrush = PdfSolidBrush(PdfColor(146, 0, 0));
+//   header.style.textBrush = PdfBrushes.white;
+//   header.cells[0].value = 'Product Name';
+//   header.cells[1].value = 'Price/Unit';
+//   header.cells[2].value = 'Quantity';
+//   header.cells[3].value = 'GST %';
+//   header.cells[4].value = 'Expiry Date';
+//   header.cells[5].value = 'Total Amount';
 
-  // Handle platform-specific saving.
-  if (kIsWeb) {
-    // Web platform-specific saving using 'universal_html'.
-    final blob = html.Blob([Uint8List.fromList(bytes)], 'application/pdf');
-    final url = html.Url.createObjectUrlFromBlob(blob);
+//   // Add rows for product data.
+//   double totalBill = 0;
+//   double totalCGST = 0;
+//   double totalSGST = 0;
 
-    // Create an anchor element and trigger the download.
-    final anchor = html.AnchorElement(href: url)
-      ..target = 'blank'
-      ..download = 'bill.pdf';
-    anchor.click();
+//   for (var item in items) {
+//     final PdfGridRow row = table.rows.add();
+//     row.cells[0].value = item['name'];
+//     row.cells[1].value = '\$${item['pricePerUnit'].toStringAsFixed(2)}';
+//     row.cells[2].value = '${item['quantity']}';
+//     row.cells[3].value = '${item['gst']}%';
+//     row.cells[4].value = item['expiry'];
+//     double itemTotal =
+//         (item['pricePerUnit'] * item['quantity']) * (1 + item['gst'] / 100);
+//     row.cells[5].value = '\$${itemTotal.toStringAsFixed(2)}';
 
-    // Clean up the URL.
-    html.Url.revokeObjectUrl(url);
-    
-  } else if (Platform.isIOS) {
-    // iOS
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/bill.pdf';
-    final file = File(filePath);
-    await file.writeAsBytes(bytes);
+//     totalBill += itemTotal;
+//     totalCGST += (item['pricePerUnit'] * item['quantity']) * (item['gst'] / 200);
+//     totalSGST += (item['pricePerUnit'] * item['quantity']) * (item['gst'] / 200);
+//   }
 
-    // Share the file
-    // await Share.shareXFiles([XFile(filePath)], text: 'Here is your bill');
-  } else if (Platform.isAndroid) {
-    final directory = await getApplicationDocumentsDirectory();
+//   // Set column widths for better alignment.
+//   table.columns[0].width = 150;
+//   table.columns[1].width = 80;
+//   table.columns[2].width = 80;
+//   table.columns[3].width = 60;
+//   table.columns[4].width = 80;
+//   table.columns[5].width = 100;
 
-    // // final Directory? filePath = '${directory.path}/bill.pdf';
-    final String filePath = "${directory.path}/bill.pdf";
+//   // Draw the table on the PDF.
+//   table.draw(page: page, bounds: const Rect.fromLTWH(10, 170, 0, 0));
 
-    final File file = File(filePath);
-    // FileSaveUtil.saveFile(context, bytes, "bill2.pdf");
-    print('PDF saved at: $filePath');
+//   // Add total at the bottom of the table.
+//   graphics.drawString(
+//     'Total Amount: \$${totalBill.toStringAsFixed(2)}',
+//     PdfStandardFont(PdfFontFamily.helvetica, 12, style: PdfFontStyle.bold),
+//     bounds: const Rect.fromLTWH(10, 400, 250, 20),
+//   );
 
-    shareFile(filePath);
-  } else {
-    throw UnsupportedError('Unsupported platform');
-  }
-}
+//   graphics.drawString(
+//     'Total CGST: \$${totalCGST.toStringAsFixed(2)}\nTotal SGST: \$${totalSGST.toStringAsFixed(2)}',
+//     PdfStandardFont(PdfFontFamily.helvetica, 12),
+//     bounds: const Rect.fromLTWH(10, 420, 250, 40),
+//   );
 
-Future<bool> _requestPermission(BuildContext context) async {
-  if (kIsWeb) return true; // No permissions needed for web.
+//   // Save and handle the PDF based on the platform.
+//   List<int> bytes = await document.save();
+//   document.dispose();
 
-  // Check and request storage permissions (for Android/Linux).
-  if (Platform.isAndroid || Platform.isLinux) {
-    var status = await Permission.storage.status;
-
-    if (status.isGranted) {
-      return true;
-    } else if (status.isPermanentlyDenied) {
-      // Guide the user to app settings.
-      await _showSettingsDialog(context);
-      return false;
-    } else if (status.isDenied) {
-      // Show a dialog explaining the need for permissions.
-      await _showPermissionDialog(context);
-      status = await Permission.storage.request();
-
-      if (status.isGranted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Permission granted!')),
-        );
-        return true;
-      } else if (status.isPermanentlyDenied) {
-        await _showSettingsDialog(context);
-      }
-    }
-  }
-
-  // For iOS and other platforms, assume permissions are not required.
-  return true;
-}
-
-Future<void> _showPermissionDialog(BuildContext context) async {
-  return showDialog<void>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Permission Required'),
-        content: const Text(
-            'Storage permission is required to save the PDF file. Please allow permissions to continue.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              // Retry permission request.
-              await Permission.storage.request().then((status) => {
-                    if (status.isGranted)
-                      {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Permission granted!')),
-                        )
-                      }
-                    else
-                      {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Permission still denied!')),
-                        )
-                      }
-                  });
-            },
-            child: const Text('Ask Again'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-Future<void> _showSettingsDialog(BuildContext context) async {
-  return showDialog<void>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Permission Required'),
-        content: const Text(
-          'Storage permission is permanently denied. Please open settings and enable the permission manually to save the PDF file.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await openAppSettings(); // Opens the app settings.
-            },
-            child: const Text('Open Settings'),
-          ),
-        ],
-      );
-    },
-  );
-}
+//   if (kIsWeb) {
+//     WebPdfDownloader.webpdfDownload(bytes);
+//   } else {
+//     MobilePdfDownloader.mobilePdfDownload(bytes);
+//   }
+// }

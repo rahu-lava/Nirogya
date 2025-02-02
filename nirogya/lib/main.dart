@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:nirogya/Model/Bill/bill.dart';
+import 'package:nirogya/Model/Final%20Medicine/final_medicine.dart';
+import 'package:nirogya/Model/User/user.dart';
+import 'package:nirogya/Utils/testing_utils.dart';
 import 'package:nirogya/View%20Model/Add%20Purchase/add_purchase_view_model.dart';
 import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
 import 'package:nirogya/View%20Model/Dealer/dealer_view_model.dart';
 import 'package:nirogya/View%20Model/Purchase%20List/purchase_list_view_model.dart';
+import 'package:nirogya/View%20Model/User/user_view_model.dart';
 import 'package:nirogya/Views/Home/Page/bills.dart';
 import 'package:nirogya/Views/Home/home.dart';
 import 'package:nirogya/Views/Notification%20Screen/Notification_Screen.dart';
@@ -25,12 +30,16 @@ Future<void> main() async {
 
   Hive.registerAdapter(DealerAdapter());
   Hive.registerAdapter(MedicineAdapter());
+  Hive.registerAdapter(UserAdapter());
+  Hive.registerAdapter(BillAdapter());
+  Hive.registerAdapter(FinalMedicineAdapter());
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (context) => AuthViewModel()),
     ChangeNotifierProvider(create: (context) => DealerViewModel()),
     ChangeNotifierProvider(create: (context) => PurchaseViewModel()),
     ChangeNotifierProvider(create: (context) => PurchaseListViewModel()),
+    ChangeNotifierProvider(create: (context) => UserViewModel()),
   ], child: MyApp()));
 }
 
@@ -40,6 +49,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    TestingUtils.printAllBills();
+    TestingUtils.printAllMedicinesInQueue();
+    TestingUtils.printAllFinalMedicines();
+    TestingUtils.printAllHistory();
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,

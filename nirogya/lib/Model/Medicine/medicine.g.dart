@@ -22,18 +22,19 @@ class MedicineAdapter extends TypeAdapter<Medicine> {
       quantity: fields[2] as int,
       expiryDate: fields[3] as String,
       batch: fields[4] as String,
-      dealerName: fields[5] as String?,
-      companyName: fields[6] as String?,
-      alertQuantity: fields[7] as int?,
-      description: fields[8] as String?,
-      imagePath: fields[9] as String?,
+      dealerName: fields[5] as String,
+      gst: fields[6] as int,
+      companyName: fields[7] as String?,
+      alertQuantity: fields[8] as int?,
+      description: fields[9] as String?,
+      imagePath: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Medicine obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.productName)
       ..writeByte(1)
@@ -47,12 +48,14 @@ class MedicineAdapter extends TypeAdapter<Medicine> {
       ..writeByte(5)
       ..write(obj.dealerName)
       ..writeByte(6)
-      ..write(obj.companyName)
+      ..write(obj.gst)
       ..writeByte(7)
-      ..write(obj.alertQuantity)
+      ..write(obj.companyName)
       ..writeByte(8)
-      ..write(obj.description)
+      ..write(obj.alertQuantity)
       ..writeByte(9)
+      ..write(obj.description)
+      ..writeByte(10)
       ..write(obj.imagePath);
   }
 
