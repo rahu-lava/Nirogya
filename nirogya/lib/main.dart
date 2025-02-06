@@ -3,6 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:nirogya/Model/Bill/bill.dart';
 import 'package:nirogya/Model/Final%20Medicine/final_medicine.dart';
+import 'package:nirogya/Model/Sales%20Bill/sales_bill.dart';
+import 'package:nirogya/Model/Scanned%20Medicine/scanned_medicine.dart';
 import 'package:nirogya/Model/User/user.dart';
 import 'package:nirogya/Utils/testing_utils.dart';
 import 'package:nirogya/View%20Model/Add%20Purchase/add_purchase_view_model.dart';
@@ -17,6 +19,8 @@ import 'package:nirogya/Views/Notification%20Screen/Notification_Screen.dart';
 import 'package:nirogya/Views/Splash%20Screen/SplashScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:toasty_box/toast_enums.dart';
+import 'package:toasty_box/toasty_box.dart';
 
 import 'Model/Medicine/medicine.dart';
 
@@ -33,6 +37,8 @@ Future<void> main() async {
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(BillAdapter());
   Hive.registerAdapter(FinalMedicineAdapter());
+  Hive.registerAdapter(ScannedMedicineAdapter());
+  Hive.registerAdapter(SalesBillAdapter());
 
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (context) => AuthViewModel()),
@@ -51,7 +57,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     TestingUtils.printAllBills();
     TestingUtils.printAllMedicinesInQueue();
-    TestingUtils.printAllFinalMedicines();
+    try {
+      TestingUtils.printAllFinalMedicines();
+    } catch (e) {
+      ToastService.showErrorToast(context,
+          length: ToastLength.medium,
+          message: "Failed to fetch final Medicine");
+    }
     TestingUtils.printAllHistory();
     return MaterialApp(
       title: 'Flutter Demo',

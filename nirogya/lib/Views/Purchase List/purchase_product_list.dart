@@ -287,24 +287,7 @@ void _showDailog(BuildContext context) {
                   ),
                   GestureDetector(
                     onTap: () async {
-                      // Define the list of items
-                      List<Map<String, dynamic>> items = [
-                        {
-                          'name': 'Paracetamol',
-                          'pricePerUnit': 50.0,
-                          'quantity': 10,
-                          'gst': 12,
-                          'expiry': '2025-12-31'
-                        },
-                        {
-                          'name': 'Vitamin C Tablets',
-                          'pricePerUnit': 100.0,
-                          'quantity': 5,
-                          'gst': 18,
-                          'expiry': '2024-06-15'
-                        },
-                      ];
-
+                      
                       // Generate the PDF
                       await generatePurchaseBillPdfBytes(false);
 

@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:nirogya/Data/Added Medicine/added_medicine_repo.dart'; // Import the Added Medicine repository
+import 'package:nirogya/Model/Scanned Medicine/scanned_medicine.dart'; // Import the ScannedMedicine model
 import '../Views/Stock info Screen/stock_info_screen.dart';
 
 class SearchStockWidget extends StatefulWidget {
@@ -11,28 +12,32 @@ class SearchStockWidget extends StatefulWidget {
 
 class _SearchStockWidgetState extends State<SearchStockWidget> {
   TextEditingController _searchController = TextEditingController();
-  List<Map<String, String>> stocks = [
-    {'id': 'Paracetamol', 'amount': '\$5.00', 'expiry': '2025-06-01'},
-    {'id': 'Ibuprofen', 'amount': '\$3.00', 'expiry': '2025-06-10'},
-    {'id': 'Aspirin', 'amount': '\$2.50', 'expiry': '2025-06-15'},
-    {'id': 'Cough Syrup', 'amount': '\$4.00', 'expiry': '2025-07-01'},
-    {'id': 'Vitamin C', 'amount': '\$1.50', 'expiry': '2025-08-01'},
-    // Add more stock items here
-  ];
-
-  List<Map<String, String>> filteredStocks = [];
+  final AddedMedicineRepository _addedMedicineRepo = AddedMedicineRepository(); // Added Medicine repository
+  List<ScannedMedicine> _addedMedicines = []; // List of added medicines
+  List<ScannedMedicine> _filteredMedicines = []; // Filtered list of medicines
 
   @override
   void initState() {
     super.initState();
-    filteredStocks = stocks;
+    _loadAddedMedicines(); // Load added medicines when the widget is initialized
   }
 
-  void _filterStocks(String query) {
+  // Fetch added medicines from the repository
+  Future<void> _loadAddedMedicines() async {
+    final medicines = await _addedMedicineRepo.getAllAddedMedicines();
     setState(() {
-      filteredStocks = stocks
-          .where((stock) =>
-              stock['id']!.toLowerCase().contains(query.toLowerCase()))
+      _addedMedicines = medicines;
+      _filteredMedicines = medicines; // Initialize filtered list with all medicines
+    });
+  }
+
+  // Filter medicines based on search query
+  void _filterMedicines(String query) {
+    setState(() {
+      _filteredMedicines = _addedMedicines
+          .where((medicine) => medicine.finalMedicine.medicine.productName
+              .toLowerCase()
+              .contains(query.toLowerCase()))
           .toList();
     });
   }
@@ -41,6 +46,7 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Search Bar
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
@@ -52,7 +58,7 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                 FilteringTextInputFormatter.singleLineFormatter,
                 LengthLimitingTextInputFormatter(15),
               ],
-              onChanged: _filterStocks,
+              onChanged: _filterMedicines,
               decoration: InputDecoration(
                 hintText: 'Search Stock...',
                 prefixIcon: Icon(
@@ -83,163 +89,133 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                   ],
                 ),
                 border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(15.0), // Set border radius
+                  borderRadius: BorderRadius.circular(15.0), // Set border radius
                   borderSide: BorderSide(color: Colors.grey),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(15.0), // Set border radius
+                  borderRadius: BorderRadius.circular(15.0), // Set border radius
                   borderSide: BorderSide(color: Colors.grey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(15.0), // Set border radius
+                  borderRadius: BorderRadius.circular(15.0), // Set border radius
                   borderSide: BorderSide(color: Color(0xff920000)),
                 ),
               ),
             ),
           ),
         ),
+
+        // Medicine List
         Expanded(
           child: ListView.builder(
-            itemCount: filteredStocks.length,
+            itemCount: _filteredMedicines.length,
             itemBuilder: (context, index) {
-              var stock = filteredStocks[index];
+              final medicine = _filteredMedicines[index];
               return GestureDetector(
                 onTap: () {
-                  // Navigate to Stock Info Screen
+                  // Navigate to Stock Info Screen and pass the selected medicine
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => StockInfoScreen(),
+                      builder: (context) => StockInfoScreen(medicine: medicine),
                     ),
                   );
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border(
-                          right: BorderSide(
-                            color: const Color.fromARGB(
-                                255, 204, 28, 16), // Red border for stock
-                            width: 4.5,
-                          ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border(
+                        right: BorderSide(
+                          color: const Color.fromARGB(255, 204, 28, 16), // Red border for stock
+                          width: 4.5,
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Container(
-                            width: double.infinity,
-                            child: Row(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Color.fromARGB(255, 255, 255, 255)
-                                        .withOpacity(0.8),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Image.asset(
-                                    "assets/images/no_preview_img.webp",
-                                    height: 100,
-                                    width: 100,
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        child: Text(
-                                          stock['id']!,
-                                          style: TextStyle(
-                                              fontSize: 22,
-                                              fontFamily: 'Poppins',
-                                              fontWeight: FontWeight.w300),
-                                        ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Container(
+                        width: double.infinity,
+                        child: Row(
+                          children: [
+                            // Medicine Image
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Image.asset(
+                                "assets/images/no_preview_img.webp",
+                                height: 100,
+                                width: 100,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+
+                            // Medicine Details
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Medicine Name
+                                  Container(
+                                    child: Text(
+                                      medicine.finalMedicine.medicine.productName,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontFamily: 'Poppins',
+                                        fontWeight: FontWeight.w300,
                                       ),
-                                      SizedBox(height: 5),
-                                      Container(
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+
+                                  // Expiry, Quantity, and Batch
+                                  Container(
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "Expiry:",
-                                                  style:
-                                                      TextStyle(fontSize: 12),
-                                                ),
-                                                SizedBox(height: 3),
-                                                Text(
-                                                  "Quantity:",
-                                                  style:
-                                                      TextStyle(fontSize: 12),
-                                                ),
-                                                SizedBox(height: 3),
-                                                Text(
-                                                  "Batch:",
-                                                  style:
-                                                      TextStyle(fontSize: 12),
-                                                ),
-                                                SizedBox(height: 3),
-                                              ],
+                                            Text(
+                                              "Expiry: ${medicine.finalMedicine.medicine.expiryDate}",
+                                              style: TextStyle(fontSize: 12),
                                             ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 5.0),
-                                              child: Text(
-                                                stock['amount']!,
-                                                style: TextStyle(fontSize: 24),
-                                              ),
-                                            )
+                                            SizedBox(height: 3),
+                                            Text(
+                                              "Quantity: ${medicine.finalMedicine.medicine.quantity}",
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            SizedBox(height: 3),
+                                            Text(
+                                              "Batch: ${medicine.finalMedicine.medicine.batch}",
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            SizedBox(height: 3),
                                           ],
                                         ),
-                                      )
-                                    ],
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                                          child: Text(
+                                            "₹${medicine.finalMedicine.medicine.price}",
+                                            style: TextStyle(fontSize: 24),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                )
-                              ],
-                            )),
-                      )
-                      // Padding(
-                      //   padding: const EdgeInsets.symmetric(vertical: 10),
-                      //   child: ListTile(
-                      //     title: Text(
-                      //       stock['id']!,
-                      //       style: TextStyle(
-                      //           fontSize: 24,
-                      //           fontFamily: 'Poppins',
-                      //           fontWeight: FontWeight.w500),
-                      //     ),
-                      //     subtitle: Text(
-                      //       'Expiry: ${stock['expiry']}',
-                      //       style: TextStyle(
-                      //           fontSize: 16,
-                      //           fontFamily: 'Poppins',
-                      //           fontWeight: FontWeight.w400),
-                      //     ),
-                      //     trailing: Text(
-                      //       stock['amount']!,
-                      //       style: TextStyle(
-                      //           fontSize: 18,
-                      //           fontFamily: 'Poppins',
-                      //           fontWeight: FontWeight.w300),
-                      //     ),
-                      //   ),
-                      // ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
+                  ),
                 ),
               );
             },

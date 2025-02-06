@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
+import 'package:nirogya/Data/Scanned%20Medicine/scanned_medicine_repo.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
+import 'package:nirogya/Utils/testing_utils.dart';
 import 'package:nirogya/Views/Add%20Stock%20Scanner/scanner_add_stock.dart';
 import 'package:nirogya/Views/Barcode%20Scanner%20Bills/barcode_scanner_bills.dart';
 import 'package:provider/provider.dart';
@@ -74,6 +76,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // TestingUtils.printAllScannedMedicines();
+    ScannedMedicineRepository smr = ScannedMedicineRepository();
+    smr.clearAllScannedMedicines();
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.white,

@@ -9,6 +9,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../Data/Added Medicine/added_medicine_repo.dart';
 import '../../Data/Final Medicine History/final_medicine_history_repo.dart';
 import '../../Data/Final Medicine/final_medicine_repo.dart';
 import '../../Data/Medicine Queue/medicine_queue_repository.dart';
@@ -22,6 +23,7 @@ class MedicineQueueScreen extends StatefulWidget {
 class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
   final MedicineQueueRepository _medicineQueueRepo = MedicineQueueRepository();
   final FinalMedicineRepository _finalMedicineRepo = FinalMedicineRepository();
+  final AddedMedicineRepository _addedMedicineRepo = AddedMedicineRepository();
   final FinalMedicineHistoryRepository _finalMedicineHistoryRepo =
       FinalMedicineHistoryRepository();
   List<Medicine> _medicines = [];
@@ -257,11 +259,11 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
     // Generate unique IDs and save to final medicine repository
     final List<Map<String, String>> barcodeData = [];
     for (var medicine in medicines) {
-      // Generate a unique ID for this medicine
-      final uniqueId =
-          await UniqueIdGenerator.generateUniqueId(_finalMedicineRepo);
+      // Generate a unique ID for this medicine (without the quantity part)
+      final uniqueId = await UniqueIdGenerator.generateUniqueId(
+          _finalMedicineRepo, _addedMedicineRepo);
 
-      // Save the medicine to the FinalMedicine repository
+      // Save the medicine to the FinalMedicine repository (without the quantity part)
       final finalMedicine = FinalMedicine(
         id: uniqueId,
         medicine: medicine,
@@ -273,11 +275,18 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
       await _finalMedicineRepo.addFinalMedicine(finalMedicine);
       await _finalMedicineHistoryRepo.saveFinalMedicineHistory(finalMedicine2);
 
+      // Truncate the medicine name to 15 characters if it exceeds the limit
+      final truncatedName = medicine.productName.length > 15
+          ? medicine.productName.substring(0, 15)
+          : medicine.productName;
+
       // Add barcode data for PDF generation (one barcode per unit)
-      for (var i = 0; i < medicine.quantity; i++) {
+      for (var i = 1; i <= medicine.quantity; i++) {
+        // Append the 3-digit quantity sequence to the unique ID
+        final barcodeId = '$uniqueId${i.toString().padLeft(3, '0')}';
         barcodeData.add({
-          "uniqueId": uniqueId, // Same ID for all units of this medicine
-          "name": medicine.productName,
+          "uniqueId": barcodeId, // Unique ID with quantity sequence
+          "name": '$truncatedName$i', // Append quantity number to the name
           "batch": medicine.batch,
         });
       }
@@ -321,7 +330,7 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
                           height: 25, // Barcode height
                         ),
                         pw.Text(
-                          data["name"]!,
+                          data["name"]!, // Truncated name with quantity number
                           style: pw.TextStyle(fontSize: 8),
                         ),
                       ],
@@ -361,30 +370,41 @@ class UniqueIdGenerator {
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   static final Random _random = Random();
 
-  // Generate a random alphanumeric string of length 5
+  // Generate a random alphanumeric string of length 4
   static String _generateRandomAlphanumeric() {
     return String.fromCharCodes(
       Iterable.generate(
-        5,
+        4,
         (_) => _chars.codeUnitAt(_random.nextInt(_chars.length)),
       ),
     );
   }
 
-  // Generate a unique ID in the format N + 5 alphanumeric characters
+  // Generate a unique ID in the format N + 4 alphanumeric characters
   static Future<String> generateUniqueId(
-      FinalMedicineRepository finalMedicineRepo) async {
+    FinalMedicineRepository finalMedicineRepo,
+    AddedMedicineRepository addedMedicineRepo, // Added Medicine repository
+  ) async {
     String uniqueId;
     bool idExists;
 
     do {
-      // Generate a new ID
+      // Generate a new ID (without the quantity part)
       uniqueId = 'N${_generateRandomAlphanumeric()}';
 
       // Check if the ID already exists in FinalMedicine
       final finalMedicine =
           await finalMedicineRepo.getFinalMedicineById(uniqueId);
-      idExists = finalMedicine != null;
+      bool idExistsInFinalMedicine = finalMedicine != null;
+
+      // Check if the ID already exists in AddedMedicine
+      final addedMedicines = await addedMedicineRepo.getAllAddedMedicines();
+      bool idExistsInAddedMedicine = addedMedicines.any(
+        (medicine) => medicine.finalMedicine.id == uniqueId,
+      );
+
+      // If the ID exists in either repository, regenerate
+      idExists = idExistsInFinalMedicine || idExistsInAddedMedicine;
     } while (idExists); // Regenerate if the ID already exists
 
     return uniqueId;

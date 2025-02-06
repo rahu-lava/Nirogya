@@ -109,7 +109,7 @@ class _ProfileState extends State<Profile> {
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => PremiumSubscriptionScreen()));
+                      builder: (context) => SubscriptionScreen()));
                 },
                 child: _buildOption("assets/images/Star.png", 'Premium',
                     textColor: Colors.amber),

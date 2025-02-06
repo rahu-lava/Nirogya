@@ -1,7 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nirogya/Data/Sales Bill/sales_bill_repo.dart';
+import 'package:nirogya/Model/Sales Bill/sales_bill.dart';
+import 'package:nirogya/Data/Added Medicine/added_medicine_repo.dart';
+import 'package:nirogya/Model/Medicine/medicine.dart';
+import '../../Utils/mobilePdfDownloader.dart';
+import '../../Utils/sales_bill_pdf.dart'; // Import the PDF utility
+import '../../Utils/webPdfDownloader.dart';
+// import 'sales_bill_pdf_utils.dart'; // Import the new utility
 
 class CustomerDetailsPage extends StatefulWidget {
-  const CustomerDetailsPage({Key? key}) : super(key: key);
+  final List<Map<String, dynamic>> scannedItems;
+
+  const CustomerDetailsPage({Key? key, required this.scannedItems})
+      : super(key: key);
 
   @override
   State<CustomerDetailsPage> createState() => _CustomerDetailsPageState();
@@ -11,36 +23,204 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
   String selectedPaymentOption = "Online";
+  String? invoiceNumber; // Store the generated invoice number
 
-  void _showDialog(String action) {
+  // Save the sales bill and update the Added Medicine repository
+  Future<void> _saveSalesBill() async {
+    final addedMedicineRepo = AddedMedicineRepository();
+
+    for (var item in widget.scannedItems) {
+      final medicine = await addedMedicineRepo.getAddedMedicineById(item['id']);
+      if (medicine != null) {
+        // Decrease the quantity
+        medicine.finalMedicine.medicine.quantity -= item['quantity'] as int;
+
+        // Remove the scanned barcodes
+        medicine.scannedBarcodes.removeWhere(
+            (barcode) => item['scannedBarcodes'].contains(barcode));
+
+        // If the quantity is zero, remove the medicine
+        if (medicine.finalMedicine.medicine.quantity <= 0) {
+          await addedMedicineRepo.deleteAddedMedicine(item['id']);
+        } else {
+          // Update the medicine in the repository
+          await addedMedicineRepo.updateAddedMedicine(medicine);
+        }
+      }
+    }
+
+    // Generate the invoice number
+    invoiceNumber = SalesBillPdfUtils.generateInvoiceNumber();
+
+    // Save the sales bill
+    final salesBill = SalesBill(
+      invoiceNumber: invoiceNumber!,
+      date: DateTime.now(),
+      medicines: widget.scannedItems.map((item) {
+        return Medicine(
+          productName: item['name'],
+          price: item['price'],
+          quantity: item['quantity'],
+          expiryDate: item['expiryDate'] ?? '',
+          batch: item['batch'] ?? '',
+          dealerName: item['dealerName'] ?? '',
+          gst: item['gst'] ?? 0,
+          companyName: item['companyName'] ?? '',
+          alertQuantity: item['alertQuantity'] ?? 0,
+          description: item['description'] ?? '',
+          imagePath: item['imagePath'] ?? '',
+        );
+      }).toList(),
+      customerName: nameController.text.isNotEmpty ? nameController.text : '-',
+      customerContactNumber:
+          numberController.text.isNotEmpty ? numberController.text : '-',
+      paymentMethod: selectedPaymentOption,
+    );
+
+    await SalesBillRepository.saveSalesBill(salesBill);
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Sales bill saved successfully!')),
+    );
+
+    // Show the dialog after saving the bill
+    _showDialog(context);
+  }
+
+  // Show the dialog for WhatsApp or Print
+  void _showDialog(BuildContext context) {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Choose an action for $action'),
-          content: const Text('Would you like to share via WhatsApp or print?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Add WhatsApp logic here
-              },
-              child: const Text(
-                'WhatsApp',
-                style: TextStyle(color: Colors.green),
-              ),
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Select Option",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "Poppins",
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    // WhatsApp Option
+                    GestureDetector(
+                      onTap: () async {
+                        // Generate the PDF and share via WhatsApp
+                        final pdfBytes =
+                            await SalesBillPdfUtils.generateSalesBillPdf(
+                          scannedItems: widget.scannedItems,
+                          customerName: nameController.text,
+                          customerContactNumber: numberController.text,
+                          paymentMethod: selectedPaymentOption,
+                        );
+
+                        if (kIsWeb) {
+                          WebPdfDownloader.webpdfDownload(pdfBytes, true);
+                        } else {
+                          MobilePdfDownloader.mobilePdfDownload(pdfBytes, true);
+                        }
+
+                        // Close the dialog and the current screen
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      child: Container(
+                        width: 120, // Fixed width for both containers
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xff920000),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/whatsapp_white.png',
+                              height: 50,
+                              width: 50,
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Whatsapp",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                                fontFamily: "Poppins",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Print Option
+                    GestureDetector(
+                      onTap: () async {
+                        // Generate the PDF for printing
+                        final pdfBytes =
+                            await SalesBillPdfUtils.generateSalesBillPdf(
+                          scannedItems: widget.scannedItems,
+                          customerName: nameController.text,
+                          customerContactNumber: numberController.text,
+                          paymentMethod: selectedPaymentOption,
+                        );
+
+                        if (kIsWeb) {
+                          WebPdfDownloader.webpdfDownload(pdfBytes, false);
+                        } else {
+                          MobilePdfDownloader.mobilePdfDownload(
+                              pdfBytes, false);
+                        }
+
+                        // Close the dialog and the current screen
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      child: Container(
+                        width: 120, // Fixed width for both containers
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xff920000),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/printer.png',
+                              height: 50,
+                              width: 50,
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Print",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                                fontFamily: "Poppins",
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Add Print logic here
-              },
-              child: const Text(
-                'Print',
-                style: TextStyle(color: Colors.green),
-              ),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -140,7 +320,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                 // Skip Button
                 TextButton(
                   onPressed: () {
-                    _showDialog('Skip');
+                    _saveSalesBill(); // Save the sales bill with "-" for customer details
                   },
                   child: const Text(
                     'Skip',
@@ -156,7 +336,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                     if (nameController.text.isNotEmpty &&
                         numberController.text.isNotEmpty &&
                         selectedPaymentOption.isNotEmpty) {
-                      _showDialog('Proceed');
+                      _saveSalesBill(); // Save the sales bill
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

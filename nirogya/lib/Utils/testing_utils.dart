@@ -1,12 +1,13 @@
+import 'package:nirogya/Data/Sales%20Bill/sales_bill_repo.dart';
 import 'package:nirogya/Model/Medicine/medicine.dart';
 import 'package:nirogya/Model/Bill/bill.dart';
-
 import '../Data/Bill/bill_repository.dart';
 import '../Data/Final Medicine History/final_medicine_history_repo.dart';
 import '../Data/Final Medicine/final_medicine_repo.dart';
 import '../Data/Medicine Queue/medicine_queue_repository.dart';
+import '../Data/Scanned Medicine/scanned_medicine_repo.dart';
 import '../Model/Final Medicine/final_medicine.dart';
-// import 'package:nirogya/Repository/Bill/bill_repository.dart';
+import '../Data/Added Medicine/added_medicine_repo.dart'; // Import the Added Medicine repository
 
 class TestingUtils {
   /// Prints details of a single Medicine object.
@@ -80,6 +81,7 @@ class TestingUtils {
     }
   }
 
+  /// Prints details of all final medicines.
   static Future<void> printAllFinalMedicines() async {
     final FinalMedicineRepository _repository = FinalMedicineRepository();
     List<FinalMedicine> medicines = await _repository.getAllFinalMedicines();
@@ -88,11 +90,12 @@ class TestingUtils {
     } else {
       for (var medicine in medicines) {
         print(
-            "ID:  ${medicine.id}, Name: ${medicine.medicine.companyName}, Quantity: ${medicine..medicine.quantity}, Expiry Date: ${medicine.medicine.expiryDate}");
+            "ID:  ${medicine.id}, Name: ${medicine.medicine.productName}, Quantity: ${medicine.medicine.quantity}, Expiry Date: ${medicine.medicine.expiryDate}");
       }
     }
   }
 
+  /// Prints details of all final medicine history.
   static Future<void> printAllHistory() async {
     final historyRepo = FinalMedicineHistoryRepository();
     final history = await historyRepo.getAllFinalMedicineHistory();
@@ -123,5 +126,71 @@ class TestingUtils {
       print('----------------------------------');
     }
     print('==================================');
+  }
+
+  /// Prints details of all added medicines.
+  static Future<void> printAllAddedMedicines() async {
+    final addedMedicineRepo = AddedMedicineRepository();
+    final addedMedicines = await addedMedicineRepo.getAllAddedMedicines();
+
+    if (addedMedicines.isEmpty) {
+      print('No added medicines available.');
+    } else {
+      print('===== Added Medicines =====');
+      for (var medicine in addedMedicines) {
+        print('ID: ${medicine.finalMedicine.id}');
+        print('Product Name: ${medicine.finalMedicine.medicine.productName}');
+        print('Price: ${medicine.finalMedicine.medicine.price}');
+        print('Quantity: ${medicine.finalMedicine.medicine.quantity}');
+        print('Expiry Date: ${medicine.finalMedicine.medicine.expiryDate}');
+        print('Batch: ${medicine.finalMedicine.medicine.batch}');
+        print('Dealer Name: ${medicine.finalMedicine.medicine.dealerName}');
+        print('GST: ${medicine.finalMedicine.medicine.gst}');
+        print(
+            'Company Name: ${medicine.finalMedicine.medicine.companyName ?? "N/A"}');
+        print(
+            'Alert Quantity: ${medicine.finalMedicine.medicine.alertQuantity ?? "N/A"}');
+        print(
+            'Description: ${medicine.finalMedicine.medicine.description ?? "N/A"}');
+        print(
+            'Image Path: ${medicine.finalMedicine.medicine.imagePath ?? "N/A"}');
+        print('Scanned Barcodes: ${medicine.scannedBarcodes}');
+        print('----------------------------');
+      }
+      print('===============================');
+    }
+  }
+
+  static Future<void> printAllSalesBills() async {
+    final salesBills = await SalesBillRepository.getAllSalesBills();
+
+    if (salesBills.isEmpty) {
+      print("No sales bills available.");
+    } else {
+      print("===== Sales Bills =====");
+      for (var bill in salesBills) {
+        print("Invoice Number: ${bill.invoiceNumber}");
+        print("Date: ${bill.date}");
+        print("Customer Name: ${bill.customerName}");
+        print("Customer Contact: ${bill.customerContactNumber}");
+        print("Payment Method: ${bill.paymentMethod}");
+        print("Medicines:");
+
+        // Print details of each medicine in the bill
+        for (var medicine in bill.medicines) {
+          print(
+              "  - Name: ${medicine.productName}, Price: ${medicine.price}, Quantity: ${medicine.quantity}, Expiry: ${medicine.expiryDate}, Batch: ${medicine.batch}, Dealer: ${medicine.dealerName}, Company: ${medicine.companyName}, GST: ${medicine.gst}, Alert Quantity: ${medicine.alertQuantity}, Description: ${medicine.description}, Image: ${medicine.imagePath}");
+        }
+
+        // Calculate and print the total amount
+        double totalAmount = bill.medicines.fold(
+          0.0,
+          (sum, medicine) => sum + (medicine.price * medicine.quantity),
+        );
+        print("Total Amount: ₹${totalAmount.toStringAsFixed(2)}");
+        print("----------------------------");
+      }
+      print("===============================");
+    }
   }
 }

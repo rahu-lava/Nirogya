@@ -119,10 +119,10 @@ class _AddProductBillsState extends State<AddProductBills> {
                       ),
                       onPressed: () {
                         // Logic for moving to the next screen
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => CustomerDetailsPage()),
-                        );
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //       builder: (context) => CustomerDetailsPage()),
+                        // );
                       },
                       child: const Text(
                         'Next',

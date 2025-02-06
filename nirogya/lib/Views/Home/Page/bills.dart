@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nirogya/Utils/testing_utils.dart';
 import 'package:nirogya/View%20Model/Add%20Purchase/add_purchase_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:toasty_box/toast_enums.dart';
@@ -45,6 +46,8 @@ class _BillsState extends State<Bills> {
 
   @override
   Widget build(BuildContext context) {
+    TestingUtils.printAllAddedMedicines();
+    TestingUtils.printAllSalesBills();
     return Column(
       children: [
         const SizedBox(height: 10),

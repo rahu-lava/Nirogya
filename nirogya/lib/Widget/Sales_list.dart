@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive/hive.dart';
 import '../Views/Sales Transaction Detail Screen/sales_transaction_detail_screen.dart';
+import '../../Model/Sales Bill/sales_bill.dart'; // Import the SalesBill model
+import '../../Data/Sales Bill/sales_bill_repo.dart'; // Import the SalesBill repository
 
 class SalesList extends StatefulWidget {
   @override
@@ -9,28 +12,30 @@ class SalesList extends StatefulWidget {
 
 class _SalesListState extends State<SalesList> {
   TextEditingController _searchController = TextEditingController();
-  List<Map<String, String>> sales = [
-    {'id': 'NIR12a456', 'amount': '\$500.00', 'date': '2024-02-01'},
-    {'id': 'NIR12b789', 'amount': '\$250.25', 'date': '2024-02-05'},
-    {'id': 'NIR12c012', 'amount': '\$399.99', 'date': '2024-02-10'},
-    {'id': 'NIR12d345', 'amount': '\$600.75', 'date': '2024-02-15'},
-    {'id': 'NIR12e678', 'amount': '\$150.50', 'date': '2024-02-20'},
-    // Add more sales data as needed
-  ];
-
-  List<Map<String, String>> filteredSales = [];
+  List<SalesBill> sales = []; // List to store sales bills
+  List<SalesBill> filteredSales = []; // List to store filtered sales bills
 
   @override
   void initState() {
     super.initState();
-    filteredSales = sales;
+    _loadSalesBills(); // Load sales bills when the widget initializes
   }
 
+  // Load sales bills from the repository
+  Future<void> _loadSalesBills() async {
+    final salesBills = await SalesBillRepository.getAllSalesBills();
+    setState(() {
+      sales = salesBills;
+      filteredSales = salesBills;
+    });
+  }
+
+  // Filter sales bills based on the search query
   void _filterSales(String query) {
     setState(() {
       filteredSales = sales
-          .where(
-              (sale) => sale['id']!.toLowerCase().contains(query.toLowerCase()))
+          .where((sale) =>
+              sale.invoiceNumber.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
@@ -39,6 +44,7 @@ class _SalesListState extends State<SalesList> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // Search Bar
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
@@ -70,11 +76,18 @@ class _SalesListState extends State<SalesList> {
             ),
           ),
         ),
+        // Sales List
         Expanded(
           child: ListView.builder(
             itemCount: filteredSales.length,
             itemBuilder: (context, index) {
               var sale = filteredSales[index];
+              // Calculate total amount for the sale
+              double totalAmount = sale.medicines.fold(
+                0.0,
+                (sum, medicine) => sum + (medicine.price * medicine.quantity),
+              );
+
               return Container(
                 decoration: BoxDecoration(
                   border: Border(
@@ -89,31 +102,38 @@ class _SalesListState extends State<SalesList> {
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: ListTile(
                     title: Text(
-                      sale['id']!,
+                      sale.invoiceNumber,
                       style: TextStyle(
-                          fontSize: 24,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w500),
+                        fontSize: 24,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     subtitle: Text(
-                      '${sale['date']}',
+                      '${sale.date.toLocal()}'.split(' ')[0], // Display date only
                       style: TextStyle(
-                          fontSize: 16,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w400),
+                        fontSize: 16,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                     trailing: Text(
-                      sale['amount']!,
+                      '\$${totalAmount.toStringAsFixed(2)}', // Display total amount
                       style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w300),
+                        fontSize: 18,
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w300,
+                      ),
                     ),
                     onTap: () {
                       // Navigate to Transaction Details screen
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (contect) =>
-                              SalesTransactionDetailsScreen()));
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => SalesTransactionDetailsScreen(
+                            salesBill: sale, // Pass the selected sales bill
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ),

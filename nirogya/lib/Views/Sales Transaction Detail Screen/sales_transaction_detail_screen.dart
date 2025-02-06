@@ -1,32 +1,20 @@
 import 'package:flutter/material.dart';
+import '../../Model/Sales Bill/sales_bill.dart'; // Import the SalesBill model
 
 class SalesTransactionDetailsScreen extends StatelessWidget {
-  final List<Map<String, String>> medicines = [
-    {
-      "name": "Ibuprofen",
-      "price": "80",
-      "quantity": "10",
-      "batch": "B123",
-      "expiry": "12/2025"
-    },
-    {
-      "name": "Amoxicillin",
-      "price": "150",
-      "quantity": "5",
-      "batch": "A789",
-      "expiry": "08/2024"
-    },
-    {
-      "name": "Cetirizine",
-      "price": "30",
-      "quantity": "20",
-      "batch": "C456",
-      "expiry": "04/2025"
-    },
-  ];
+  final SalesBill salesBill; // Accept the SalesBill object
+
+  const SalesTransactionDetailsScreen({Key? key, required this.salesBill})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Calculate the total amount
+    double totalAmount = salesBill.medicines.fold(
+      0.0,
+      (sum, medicine) => sum + (medicine.price * medicine.quantity),
+    );
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -47,22 +35,27 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      "Rahul Sharma",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      salesBill.customerName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Text(
-                      "9876543210",
-                      style: TextStyle(fontSize: 14),
+                      salesBill.customerContactNumber,
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ],
                 ),
-                const Text(
-                  "#TXN12345",
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                Text(
+                  "#${salesBill.invoiceNumber}",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -71,9 +64,9 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
             // Detailed Medicine List
             Expanded(
               child: ListView.builder(
-                itemCount: medicines.length,
+                itemCount: salesBill.medicines.length,
                 itemBuilder: (context, index) {
-                  final medicine = medicines[index];
+                  final medicine = salesBill.medicines[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: Padding(
@@ -83,7 +76,7 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
                         children: [
                           // Medicine Name
                           Text(
-                            medicine["name"]!,
+                            medicine.productName,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -99,7 +92,7 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Price: ${medicine["price"]}",
+                                    "Price: ₹${medicine.price.toStringAsFixed(2)}",
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[700],
@@ -107,7 +100,7 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    "Quantity: ${medicine["quantity"]}",
+                                    "Quantity: ${medicine.quantity}",
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[700],
@@ -120,7 +113,7 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Batch: ${medicine["batch"]}",
+                                    "Batch: ${medicine.batch}",
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[700],
@@ -128,7 +121,7 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    "Expiry: ${medicine["expiry"]}",
+                                    "Expiry: ${medicine.expiryDate}",
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[700],
@@ -153,15 +146,15 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       "Payment Mode",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "Online",
-                      style: TextStyle(
+                      salesBill.paymentMethod,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -170,15 +163,15 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
+                  children: [
+                    const Text(
                       "Total Amount",
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "₹470",
-                      style: TextStyle(
+                      "₹${totalAmount.toStringAsFixed(2)}",
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.green,

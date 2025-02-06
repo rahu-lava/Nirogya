@@ -1,18 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import '../Edit Stock Page/edit_stock_page.dart';
+import '../../Model/Scanned Medicine/scanned_medicine.dart'; // Import the ScannedMedicine model
 
 class StockInfoScreen extends StatefulWidget {
+  final ScannedMedicine medicine; // Accept the medicine instance
+
+  StockInfoScreen({required this.medicine}); // Constructor
+
   @override
   _StockInfoScreenState createState() => _StockInfoScreenState();
 }
 
 class _StockInfoScreenState extends State<StockInfoScreen> {
-  String selectedBatch = "Batch A"; // Initial batch value
-
   @override
   Widget build(BuildContext context) {
+    final medicine = widget.medicine; // Access the passed medicine instance
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -38,7 +45,12 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
             onPressed: () {
               // Edit action
               Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => EditStockPage()));
+                MaterialPageRoute(
+                  builder: (context) => EditStockPage(
+                    medicine: medicine,
+                  ),
+                ),
+              );
             },
           ),
         ],
@@ -51,16 +63,22 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
             children: [
               // Image Section
               Container(
-                height: 150,
+                height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
                 clipBehavior: Clip.hardEdge,
-                child: Image.asset(
-                  "assets/images/no_preview_img.webp", // Replace with your image URL
+                child: Image.file(
+                  File(medicine.finalMedicine.medicine.imagePath!),
                   fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      "assets/images/no_preview_img.webp", // Fallback image
+                      fit: BoxFit.contain,
+                    );
+                  },
                 ),
               ),
 
@@ -76,7 +94,8 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text(
-                    "Medicine Name",
+                    medicine.finalMedicine.medicine
+                        .productName, // Display medicine name
                     style: TextStyle(
                       color: Colors.black,
                       fontSize: 24,
@@ -94,7 +113,8 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
                 children: [
                   Text("Description", style: _labelStyle),
                   SizedBox(height: 4),
-                  Text("This is a medicine description.", style: _valueStyle),
+                  Text(medicine.finalMedicine.medicine.description!,
+                      style: _valueStyle), // Display description
                 ],
               ),
 
@@ -105,40 +125,12 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Price
-                  _buildLabelValueColumn("Price", "₹200"),
+                  _buildLabelValueColumn(
+                      "Price", "₹${medicine.finalMedicine.medicine.price}"),
 
                   // Batch
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Batch", style: _labelStyle),
-                        // SizedBox(height: 4),
-                        Container(
-                          // color: Colors.red,
-                          height: 30,
-                          padding: EdgeInsets.zero,
-                          child: DropdownButton<String>(
-                            padding: EdgeInsets.all(0),
-                            value: selectedBatch,
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                selectedBatch = newValue ?? "";
-                                // Update certain values based on the selected batch
-                              });
-                            },
-                            items:
-                                ["Batch A", "Batch B", "Batch C"].map((batch) {
-                              return DropdownMenuItem(
-                                value: batch,
-                                child: Text(batch, style: _valueStyle),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildLabelValueColumn(
+                      "Batch", medicine.finalMedicine.medicine.batch),
                 ],
               ),
 
@@ -148,8 +140,10 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildLabelValueColumn("Quantity", "50"),
-                  _buildLabelValueColumn("Expiry", "12/2025"),
+                  _buildLabelValueColumn("Quantity",
+                      medicine.finalMedicine.medicine.quantity.toString()),
+                  _buildLabelValueColumn(
+                      "Expiry", medicine.finalMedicine.medicine.expiryDate),
                 ],
               ),
 
@@ -159,8 +153,10 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildLabelValueColumn("Alert Quantity", "10"),
-                  _buildLabelValueColumn("Dealer Name", "ABC Pharma"),
+                  _buildLabelValueColumn("Alert Quantity",
+                      medicine.finalMedicine.medicine.alertQuantity.toString()),
+                  _buildLabelValueColumn("Dealer Name",
+                      medicine.finalMedicine.medicine.dealerName),
                 ],
               ),
 
@@ -170,8 +166,10 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildLabelValueColumn("Company", "XYZ Ltd."),
-                  _buildLabelValueColumn("QR Code", "Yes"),
+                  _buildLabelValueColumn(
+                      "Company", medicine.finalMedicine.medicine.companyName!),
+                  _buildLabelValueColumn(
+                      "QR Code", "Yes"), // Assuming QR code is always present
                 ],
               ),
 
@@ -183,7 +181,8 @@ class _StockInfoScreenState extends State<StockInfoScreen> {
                 children: [
                   Text("Salt Composition", style: _labelStyle),
                   SizedBox(height: 4),
-                  Text("Paracetamol 500mg", style: _valueStyle),
+                  Text(medicine.finalMedicine.medicine.description!,
+                      style: _valueStyle), // Display salt composition
                 ],
               ),
             ],
