@@ -64,90 +64,138 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Subscription'),
-        centerTitle: true,
-        backgroundColor: const Color(0xFF920000),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 200,
-              child: Center(
-                child: Image.asset(
-                  'assets/images/nirogya_short_gold.png', // Replace with your logo
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Premium Subscription',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      '₹49/month',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF920000),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Support Our Project and get access to:',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 5),
-                    const ListTile(
-                      leading: Icon(Icons.download, color: Colors.green),
-                      title: Text('Download Page Access'),
-                    ),
-                    const ListTile(
-                      leading: Icon(Icons.check_circle, color: Colors.green),
-                      title: Text('Attendance Page Access'),
-                    ),
-                    const SizedBox(height: 10),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: _openRazorpay,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF920000),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 40),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Subscribe Now',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        title: const Text(
+          'Subscription',
+          style: TextStyle(color: Colors.black),
         ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 200,
+                    width: double.infinity,
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/nirogya_short_gold.png', // Replace with your logo
+                        fit: BoxFit.contain,
+                        color: const Color(0xFFD4AF37), // Golden color
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Premium Subscription',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            '₹49/month',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFD4AF37), // Golden color
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Support Our Project and get access to:',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          _buildPerk(Icons.download, 'Download Page Access'),
+                          _buildPerk(
+                              Icons.check_circle, 'Attendance Page Access'),
+                          _buildPerk(Icons.star, 'Exclusive Content Access'),
+                          _buildPerk(
+                              Icons.notifications, 'Priority Notifications'),
+                          _buildPerk(Icons.support, '24/7 Customer Support'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFD4AF37),
+                    Color(0xFFC0A238)
+                  ], // Golden gradient
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _openRazorpay,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Subscribe Now',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPerk(IconData icon, String text) {
+    return ListTile(
+      leading: Icon(icon, color: const Color(0xFFD4AF37)), // Golden color
+      title: Text(
+        text,
+        style: const TextStyle(fontSize: 16),
       ),
     );
   }

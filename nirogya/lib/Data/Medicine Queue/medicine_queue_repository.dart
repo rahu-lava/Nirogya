@@ -38,27 +38,27 @@ class MedicineQueueRepository {
   }
 
   /// Generates 100 sample medicines for testing.
-  Future<void> generateSampleMedicines() async {
-    final box = await _openBox();
-    if (box.isEmpty) {
-      for (var i = 0; i < 45; i++) {
-        final medicine = Medicine(
-          productName: "Medicine ${i + 1}",
-          price: (i + 1) * 10.0,
-          quantity: i + 5,
-          expiryDate: "${(i % 12) + 1}/2025",
-          batch: "Batch: ${String.fromCharCode(65 + (i % 26))}123",
-          dealerName: "Dealer ${i + 1}",
-          gst: 18,
-          companyName: "Company ${i + 1}",
-          alertQuantity: 10,
-          description: "Sample medicine ${i + 1}",
-          imagePath: null,
-        );
-        await box.add(medicine);
-      }
-    }
-  }
+  // Future<void> generateSampleMedicines() async {
+  //   final box = await _openBox();
+  //   if (box.isEmpty) {
+  //     for (var i = 0; i < 45; i++) {
+  //       final medicine = Medicine(
+  //         productName: "Medicine ${i + 1}",
+  //         price: (i + 1) * 10.0,
+  //         quantity: i + 5,
+  //         expiryDate: "${(i % 12) + 1}/2025",
+  //         batch: "Batch: ${String.fromCharCode(65 + (i % 26))}123",
+  //         dealerName: "Dealer ${i + 1}",
+  //         gst: 18,
+  //         companyName: "Company ${i + 1}",
+  //         alertQuantity: 10,
+  //         description: "Sample medicine ${i + 1}",
+  //         imagePath: null,
+  //       );
+  //       await box.add(medicine);
+  //     }
+  //   }
+  // }
 
   /// Clears all medicines from the queue after they have been transferred.
   Future<void> clearQueue() async {

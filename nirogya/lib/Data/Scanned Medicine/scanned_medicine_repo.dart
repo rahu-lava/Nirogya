@@ -1,6 +1,7 @@
 import 'package:bottom_bar_matu/utils/app_utils.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
+import 'package:nirogya/Utils/print_pdf.dart';
 import 'package:nirogya/Utils/testing_utils.dart';
 import '../../Model/Final Medicine/final_medicine.dart';
 import '../../Model/Medicine/medicine.dart';
@@ -31,6 +32,14 @@ class ScannedMedicineRepository {
         backgroundColor: isError ? Colors.red : Colors.green,
       ),
     );
+  }
+
+  Future<void> addScannedMedicine2(
+      String baseId, ScannedMedicine scannedMedicine) async {
+    final scannedBox = await _openScannedBox();
+    print("---Printing all the scannedMedicine From Repo----");
+    printAllScannedMedicines();
+    scannedBox.put(baseId, scannedMedicine);
   }
 
   Future<bool> addScannedMedicine(String barcode, BuildContext context) async {
@@ -167,11 +176,26 @@ class ScannedMedicineRepository {
 
   Future<List<ScannedMedicine>> getAllScannedMedicines() async {
     final scannedBox = await _openScannedBox();
-    return scannedBox.values.toList();
+    final List<ScannedMedicine> scannedMedicines = scannedBox.values.toList();
+
+    // Iterate through the list and remove medicines with zero quantity
+    for (var medicine in scannedMedicines) {
+      if (medicine.finalMedicine.medicine.quantity <= 0) {
+        await scannedBox.delete(medicine.key); // Remove from the box
+      }
+    }
+
+    return scannedBox.values.toList(); // Return updated list
   }
 
   Future<void> printAllScannedMedicines() async {
     final scannedBox = await _openScannedBox();
+
+    if (scannedBox.isEmpty) {
+      print("No scanned medicines found.");
+      return;
+    }
+    print("here are all the Scanned meds");
     scannedBox.values.forEach((medicine) {
       print(
           'ID: ${medicine.finalMedicine.id}, Product Name: ${medicine.finalMedicine.medicine.productName}, Quantity: ${medicine.finalMedicine.medicine.quantity}, Scanned Barcodes: ${medicine.scannedBarcodes}');

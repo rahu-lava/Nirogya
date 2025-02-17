@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Import the intl package
 
 class GreetingWidget extends StatelessWidget {
   const GreetingWidget({Key? key}) : super(key: key);
@@ -31,6 +32,13 @@ class GreetingWidget extends StatelessWidget {
     }
   }
 
+  String getFormattedDate() {
+    final now = DateTime.now();
+    final formattedDate =
+        DateFormat('dd MMM yyyy').format(now); // Format: 12 Dec 2024
+    return formattedDate;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -38,10 +46,6 @@ class GreetingWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Text(
-          //   "Welcome,",
-          //   style: TextStyle(fontSize: 24),
-          // ),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -62,9 +66,11 @@ class GreetingWidget extends StatelessWidget {
             ],
           ),
           Text(
-            "12 Dec 2024",
-            style:
-                TextStyle(fontSize: 16, color: Colors.black.withOpacity(0.5)),
+            getFormattedDate(), // Use the dynamic date
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black.withOpacity(0.5),
+            ),
           ),
         ],
       ),

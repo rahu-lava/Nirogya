@@ -2,10 +2,10 @@ import 'package:nirogya/Data/Sales%20Bill/sales_bill_repo.dart';
 import 'package:nirogya/Model/Medicine/medicine.dart';
 import 'package:nirogya/Model/Bill/bill.dart';
 import '../Data/Bill/bill_repository.dart';
+import '../Data/Employee/employee_repo.dart';
 import '../Data/Final Medicine History/final_medicine_history_repo.dart';
 import '../Data/Final Medicine/final_medicine_repo.dart';
 import '../Data/Medicine Queue/medicine_queue_repository.dart';
-import '../Data/Scanned Medicine/scanned_medicine_repo.dart';
 import '../Model/Final Medicine/final_medicine.dart';
 import '../Data/Added Medicine/added_medicine_repo.dart'; // Import the Added Medicine repository
 
@@ -188,6 +188,35 @@ class TestingUtils {
           (sum, medicine) => sum + (medicine.price * medicine.quantity),
         );
         print("Total Amount: ₹${totalAmount.toStringAsFixed(2)}");
+        print("----------------------------");
+      }
+      print("===============================");
+    }
+  }
+
+  /// Prints details of all employees.
+  static Future<void> printAllEmployees() async {
+    final employeeRepository = EmployeeRepository();
+    final employees = await employeeRepository.getAllEmployees();
+
+    if (employees.isEmpty) {
+      print("No employees found.");
+    } else {
+      print("===== Employee List =====");
+      for (var employee in employees) {
+        print("ID: ${employee.id}");
+        print("Name: ${employee.name}");
+        print("Contact: ${employee.contact}");
+        print("Profile Image: ${employee.profileImage}");
+        print("Date of Joining: ${employee.dateOfJoining}");
+        print("Attendance Records:");
+
+        // Print attendance records
+        for (var attendance in employee.attendance) {
+          print(
+              "  - Date: ${attendance.date}, Time In: ${attendance.timeIn}, Time Out: ${attendance.timeOut}");
+        }
+
         print("----------------------------");
       }
       print("===============================");

@@ -23,11 +23,24 @@ class _SalesListState extends State<SalesList> {
 
   // Load sales bills from the repository
   Future<void> _loadSalesBills() async {
-    final salesBills = await SalesBillRepository.getAllSalesBills();
-    setState(() {
-      sales = salesBills;
-      filteredSales = salesBills;
-    });
+    try {
+      final salesBills = await SalesBillRepository.getAllSalesBills();
+
+      // Check if the widget is still mounted before calling setState
+      if (mounted) {
+        setState(() {
+          sales = salesBills;
+          filteredSales = salesBills;
+        });
+      }
+    } catch (e) {
+      print(e);
+
+      // Retry loading if an error occurs (optional)
+      if (mounted) {
+        _loadSalesBills();
+      }
+    }
   }
 
   // Filter sales bills based on the search query
@@ -110,7 +123,8 @@ class _SalesListState extends State<SalesList> {
                       ),
                     ),
                     subtitle: Text(
-                      '${sale.date.toLocal()}'.split(' ')[0], // Display date only
+                      '${sale.date.toLocal()}'
+                          .split(' ')[0], // Display date only
                       style: TextStyle(
                         fontSize: 16,
                         fontFamily: 'Poppins',

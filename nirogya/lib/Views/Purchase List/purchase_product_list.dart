@@ -333,9 +333,3 @@ void _showDailog(BuildContext context) {
     },
   );
 }
-
-// Future<String> generateBillPdfs(
-//     BuildContext context, List<Map<String, dynamic>> items) async {
-//   final String pdfFile = await generateBillPdf(context, items );
-//   return pdfFile;
-// }

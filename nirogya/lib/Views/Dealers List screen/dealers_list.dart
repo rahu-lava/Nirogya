@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart'; // For opening WhatsApp and dialer
 import 'package:nirogya/Views/Add%20Dealer%20Screen/add_dealer.dart';
 import 'package:provider/provider.dart';
-
 import '../../Model/Dealer/dealer.dart';
 import '../../View Model/Dealer/dealer_view_model.dart';
+import 'package:toasty_box/toast_enums.dart'; // For toast messages
+import 'package:toasty_box/toast_service.dart'; // For toast messages
 
 class OrderStockPage extends StatefulWidget {
   @override
@@ -14,27 +16,10 @@ class _OrderStockPageState extends State<OrderStockPage> {
   late DealerViewModel dealerProvider;
   bool _isLoading = true;
 
-  Future<List<Dealer>> fetchDealer(BuildContext context) async {
-    DealerViewModel dealerProvider = context.read<DealerViewModel>();
-    await dealerProvider.fetchDealers();
-    return dealerProvider.dealers;
-  }
-
-  void _onWhatsAppTap(String number) {
-    // Add WhatsApp URL logic
-    print("Open WhatsApp for $number");
-  }
-
-  void _onCallTap(String number) {
-    // Add Call logic
-    print("Calling $number");
-  }
-
   @override
   void initState() {
     super.initState();
     _initializeDealers();
-    // fetchDealer(context);
   }
 
   Future<void> _initializeDealers() async {
@@ -50,12 +35,76 @@ class _OrderStockPageState extends State<OrderStockPage> {
     }
   }
 
+  // Open WhatsApp for the given number if the dealer has WhatsApp
+  void _onWhatsAppTap(Dealer dealer) async {
+    if (dealer.hasWhatsApp) {
+      final url = "https://wa.me/+91${dealer.contactNumber}"; // WhatsApp URL
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        print("Could not launch WhatsApp");
+      }
+    } else {
+      // Show a warning toast if the dealer doesn't have WhatsApp
+      ToastService.showWarningToast(
+        context,
+        length: ToastLength.medium,
+        message: "${dealer.name} doesn't have WhatsApp.",
+      );
+    }
+  }
+
+  // Open dialer with the given number
+  void _onCallTap(String number) async {
+    final url = "tel:$number"; // Dialer URL
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      print("Could not launch dialer");
+    }
+  }
+
+  // Show a dialog to confirm deletion of the dealer
+  void _showDeleteDialog(BuildContext context, Dealer dealer) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Delete Dealer"),
+        content: Text("Are you sure you want to delete ${dealer.name}?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _deleteDealer(dealer);
+              Navigator.pop(context);
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Delete the dealer from the database
+  Future<void> _deleteDealer(Dealer dealer) async {
+    try {
+      await dealerProvider.deleteDealer(dealer);
+      await dealerProvider.fetchDealers(); // Refresh the list
+      setState(() {}); // Update the UI
+    } catch (e) {
+      print("Error deleting dealer: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // DealerProvider dealerProvider = context.read<DealerProvider>();
-    // List<Dealer> dealers = dealerProvider.dealers;
     final dealerProvider = Provider.of<DealerViewModel>(context);
-    // print(dealerProvider.dealers.length);
 
     return Scaffold(
       appBar: AppBar(
@@ -86,62 +135,71 @@ class _OrderStockPageState extends State<OrderStockPage> {
               ),
               child: Text(
                 "Add Dealer",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500),
               ),
             ),
             SizedBox(height: 20),
 
             // List of Dealers
             Expanded(
-              child: ListView.builder(
-                itemCount: dealerProvider.dealers.length,
-                itemBuilder: (context, index) {
-                  final dealer = dealerProvider.dealers[index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 16,
-                      ),
-                      title: Text(
-                        dealer.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // WhatsApp Icon
-                          IconButton(
-                            icon: Image.asset(
-                              "assets/images/whatsapp_red.png", // Replace with your asset path
-                              height: 24,
-                              width: 24,
-                            ),
-                            onPressed: () =>
-                                _onWhatsAppTap(dealer.contactNumber),
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: dealerProvider.dealers.length,
+                      itemBuilder: (context, index) {
+                        final dealer = dealerProvider.dealers[index];
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          // Call Icon
-                          IconButton(
-                            icon: Image.asset(
-                              "assets/images/phone.png", // Replace with your asset path
-                              height: 24,
-                              width: 24,
+                          child: InkWell(
+                            onTap: () => _showDeleteDialog(context, dealer),
+                            child: ListTile(
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 16,
+                              ),
+                              title: Text(
+                                dealer.name,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // WhatsApp Icon
+                                  IconButton(
+                                    icon: Image.asset(
+                                      "assets/images/whatsapp_red.png", // Replace with your asset path
+                                      height: 24,
+                                      width: 24,
+                                    ),
+                                    onPressed: () => _onWhatsAppTap(
+                                        dealer), // Pass the dealer object
+                                  ),
+                                  // Call Icon
+                                  IconButton(
+                                    icon: Image.asset(
+                                      "assets/images/phone.png", // Replace with your asset path
+                                      height: 24,
+                                      width: 24,
+                                    ),
+                                    onPressed: () =>
+                                        _onCallTap(dealer.contactNumber),
+                                  ),
+                                ],
+                              ),
                             ),
-                            onPressed: () => _onCallTap(dealer.contactNumber),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

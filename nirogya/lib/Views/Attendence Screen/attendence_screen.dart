@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:nirogya/Data/Employee/employee_repo.dart';
+import 'package:nirogya/Model/Employee/employee.dart';
 import 'package:nirogya/Views/Add%20Employee/add_employee.dart';
 import 'package:nirogya/Widget/bills_card.dart';
+
+import '../../Model/Attendence/attendance.dart';
+import '../../Widget/employee_details_dailog.dart';
 
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
@@ -10,16 +15,34 @@ class AttendanceScreen extends StatefulWidget {
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
-  // Employee list for dropdown
-  final List<String> employees = [
-    'John Doe',
-    'Jane Smith',
-    'Alice Johnson',
-    'Bob Brown'
-  ];
+  final EmployeeRepository _employeeRepository = EmployeeRepository();
+  List<Employee> employees = [];
+  List<Employee> employeesAtWork = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEmployees();
+  }
+
+  Future<void> _loadEmployees() async {
+    employees = await _employeeRepository.getAllEmployees();
+    employeesAtWork = await _getEmployeesAtWork();
+    setState(() {}); // Trigger UI rebuild
+  }
+
+  Future<List<Employee>> _getEmployeesAtWork() async {
+    final List<Employee> atWork = [];
+    for (final employee in employees) {
+      if (await _employeeRepository.isEmployeeAtWork(employee.id)) {
+        atWork.add(employee);
+      }
+    }
+    return atWork;
+  }
 
   // Common widget for list items
-  Widget staffListItem(String name) {
+  Widget staffListItem(Employee employee) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
@@ -28,21 +51,44 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         ),
         tileColor: Colors.grey.shade200,
         title: Text(
-          name,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          employee.name,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
+        subtitle: Text(
+          "Contact: ${employee.contact}",
+          style: const TextStyle(fontSize: 14),
+        ),
+        trailing: employeesAtWork.contains(employee)
+            ? const Icon(Icons.check_circle, color: Colors.green)
+            : const Icon(Icons.cancel, color: Colors.red),
+        onTap: () {
+          // Open the bottom dialog with employee details
+          _showEmployeeDetailsDialog(employee);
+        },
       ),
+    );
+  }
+
+  void _showEmployeeDetailsDialog(Employee employee) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled:
+          true, // Allow the dialog to take up most of the screen
+      builder: (context) {
+        return EmployeeDetailsDialog(employee: employee);
+      },
     );
   }
 
   // Function to show Clock In dialog
   void showClockInDialog() {
+    final employeesNotAtWork =
+        employees.where((emp) => !employeesAtWork.contains(emp)).toList();
+
     showDialog(
       context: context,
       builder: (context) {
+        String? selectedEmployeeId;
         return Dialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
@@ -64,10 +110,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     labelText: "Select Employee",
                     border: OutlineInputBorder(),
                   ),
-                  items: employees
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  items: employeesNotAtWork
+                      .map((emp) => DropdownMenuItem(
+                            value: emp.id,
+                            child: Text(emp.name),
+                          ))
                       .toList(),
-                  onChanged: (value) {},
+                  onChanged: (value) {
+                    selectedEmployeeId = value;
+                  },
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -75,18 +126,34 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text("Time In", style: TextStyle(fontSize: 14)),
-                        SizedBox(height: 5),
-                        Text("08:00 AM", style: TextStyle(fontSize: 16)),
-                        Text("12/01/2025", style: TextStyle(fontSize: 14)),
+                      children: [
+                        const Text("Time In", style: TextStyle(fontSize: 14)),
+                        const SizedBox(height: 5),
+                        Text(
+                          "${DateTime.now().hour}:${DateTime.now().minute}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        Text(
+                          "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+                          style: const TextStyle(fontSize: 14),
+                        ),
                       ],
                     )
                   ],
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    if (selectedEmployeeId != null) {
+                      await _employeeRepository.markAttendance(
+                        selectedEmployeeId!,
+                        DateTime.now(),
+                        null, // Time out is null for clock-in
+                      );
+                      await _loadEmployees(); // Refresh the list
+                      Navigator.of(context).pop();
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     minimumSize: const Size(double.infinity, 50),
@@ -106,69 +173,125 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Clock Out",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(
-                    labelText: "Select Employee",
-                    border: OutlineInputBorder(),
-                  ),
-                  items: employees
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (value) {},
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        String? selectedEmployeeId;
+        String timeInDisplay = "-"; // Default value for Time In
+        DateTime? timeIn; // Store the actual clock-in time
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text("Time In", style: TextStyle(fontSize: 14)),
-                        SizedBox(height: 5),
-                        Text("08:00 AM", style: TextStyle(fontSize: 16)),
-                        Text("12/01/2025", style: TextStyle(fontSize: 14)),
+                    const Text(
+                      "Clock Out",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        labelText: "Select Employee",
+                        border: OutlineInputBorder(),
+                      ),
+                      items: employeesAtWork
+                          .map((emp) => DropdownMenuItem(
+                                value: emp.id,
+                                child: Text(emp.name),
+                              ))
+                          .toList(),
+                      onChanged: (value) async {
+                        if (value != null) {
+                          final employee =
+                              await _employeeRepository.getEmployeeById(value);
+                          if (employee != null) {
+                            // Find today's attendance record
+                            final todayAttendance =
+                                employee.attendance.firstWhere(
+                              (att) =>
+                                  att.date.day == DateTime.now().day &&
+                                  att.date.month == DateTime.now().month &&
+                                  att.date.year == DateTime.now().year,
+                              orElse: () => Attendance(date: DateTime.now()),
+                            );
+
+                            // Update the Time In display
+                            setState(() {
+                              selectedEmployeeId = value;
+                              timeIn = todayAttendance.timeIn;
+                              timeInDisplay =
+                                  "${timeIn!.hour}:${timeIn!.minute} ${timeIn!.day}/${timeIn!.month}/${timeIn!.year}";
+                            });
+                          }
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Time In",
+                                style: TextStyle(fontSize: 14)),
+                            const SizedBox(height: 5),
+                            Text(
+                              timeInDisplay, // Display the clock-in time or "-"
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        const Icon(Icons.arrow_forward, size: 24),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Time Out",
+                                style: TextStyle(fontSize: 14)),
+                            const SizedBox(height: 5),
+                            Text(
+                              "${DateTime.now().hour}:${DateTime.now().minute} ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                    const Icon(Icons.arrow_forward, size: 24),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text("Time Out", style: TextStyle(fontSize: 14)),
-                        SizedBox(height: 5),
-                        Text("05:00 PM", style: TextStyle(fontSize: 16)),
-                        Text("12/01/2025", style: TextStyle(fontSize: 14)),
-                      ],
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (selectedEmployeeId != null && timeIn != null) {
+                          await _employeeRepository.markAttendance(
+                            selectedEmployeeId!,
+                            timeIn!, // Use the stored clock-in time
+                            DateTime.now(), // Current time for clock-out
+                          );
+
+                          // Refresh the employee list and update the UI
+                          await _loadEmployees();
+
+                          // Close the dialog
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                      child: const Text("Mark"),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: const Text("Mark"),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
@@ -186,7 +309,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (context) => AddEmployeeScreen()));
               },
               style: ElevatedButton.styleFrom(
@@ -195,15 +318,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
               child: const Text(
                 "Add New Employee",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                BillsCard(title: "Staff Count", amount: "12"),
-                BillsCard(title: "At Work", amount: "8"),
+              children: [
+                BillsCard(title: "Staff Count", amount: "${employees.length}"),
+                BillsCard(
+                    title: "At Work", amount: "${employeesAtWork.length}"),
               ],
             ),
             const SizedBox(height: 20),
@@ -216,7 +343,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       backgroundColor: const Color(0xff920000),
                       minimumSize: const Size(double.infinity, 50),
                     ),
-                    child: const Text("Clock In"),
+                    child: const Text(
+                      "Clock In",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -227,7 +357,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       backgroundColor: const Color(0xff920000),
                       minimumSize: const Size(double.infinity, 50),
                     ),
-                    child: const Text("Clock Out"),
+                    child: const Text(
+                      "Clock Out",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -257,13 +390,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         children: [
                           ListView(
                             children: employees
-                                .map((name) => staffListItem(name))
+                                .map((emp) => staffListItem(emp))
                                 .toList(),
                           ),
                           ListView(
-                            children: employees
-                                .take(3) // Assuming 3 employees are on work
-                                .map((name) => staffListItem(name))
+                            children: employeesAtWork
+                                .map((emp) => staffListItem(emp))
                                 .toList(),
                           ),
                         ],
@@ -279,5 +411,3 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 }
-
-// BillsCard widget remains the same as in your provided code.

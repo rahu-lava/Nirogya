@@ -6,48 +6,37 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:nirogya/Model/Medicine/medicine.dart';
 import 'package:nirogya/Model/Sales Bill/sales_bill.dart';
 import 'package:nirogya/Data/User/user_repository.dart';
+import 'package:nirogya/Data/Sales Bill/sales_bill_repo.dart'; // Import the SalesBill repository
 import 'mobilePdfDownloader.dart';
 import 'webPdfDownloader.dart';
 
 class SalesBillPdfUtils {
-  // Generate a random invoice number starting with "NIR" followed by 5 alphanumeric characters
   static String generateInvoiceNumber() {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const chars = '0123456789';
     final random = Random();
-    final uniqueNumber = List.generate(5, (index) => chars[random.nextInt(chars.length)]).join();
+    final uniqueNumber =
+        List.generate(5, (index) => chars[random.nextInt(chars.length)]).join();
     return "NIR$uniqueNumber";
   }
 
   // Generate the PDF and return the bytes
   static Future<Uint8List> generateSalesBillPdf({
-    required List<Map<String, dynamic>> scannedItems,
-    required String customerName,
-    required String customerContactNumber,
-    required String paymentMethod,
+    required String invoiceNumber, // Accept invoice number as an argument
   }) async {
+    // Fetch the sales bill by invoice number
+    final salesBill =
+        await SalesBillRepository.getSalesBillByInvoice(invoiceNumber);
+    if (salesBill == null) {
+      throw Exception(
+          "Sales bill not found for invoice number: $invoiceNumber");
+    }
+
     // Fetch current user details
     final userRepository = UserRepository();
     final currentUser = await userRepository.getUser();
     if (currentUser == null) {
       throw Exception("User details not found!");
     }
-
-    // Convert scanned items to Medicine objects
-    final List<Medicine> medicines = scannedItems.map((item) {
-      return Medicine(
-        productName: item['name'],
-        price: item['price'],
-        quantity: item['quantity'],
-        expiryDate: item['expiryDate'] ?? '',
-        batch: item['batch'] ?? '',
-        dealerName: item['dealerName'] ?? '',
-        gst: item['gst'] ?? 0,
-        companyName: item['companyName'] ?? '',
-        alertQuantity: item['alertQuantity'] ?? 0,
-        description: item['description'] ?? '',
-        imagePath: item['imagePath'] ?? '',
-      );
-    }).toList();
 
     // Generate the PDF
     final pdf = pw.Document();
@@ -58,19 +47,13 @@ class SalesBillPdfUtils {
         margin: const pw.EdgeInsets.all(20),
         build: (context) {
           // Total calculation
-          double totalAmount = 0;
-          double totalCGST = 0;
-          double totalSGST = 0;
+          double totalAmount = salesBill.medicines.fold(
+            0.0,
+            (sum, medicine) => sum + (medicine.price * medicine.quantity),
+          );
 
-          final medicineData = medicines.map((medicine) {
+          final medicineData = salesBill.medicines.map((medicine) {
             double itemTotal = medicine.price * medicine.quantity;
-            double gstAmount = (itemTotal * medicine.gst) / 100;
-            double cgst = gstAmount / 2;
-            double sgst = gstAmount / 2;
-
-            totalAmount += itemTotal;
-            totalCGST += cgst;
-            totalSGST += sgst;
 
             return [
               medicine.productName,
@@ -78,7 +61,6 @@ class SalesBillPdfUtils {
               medicine.expiryDate,
               '\$${medicine.price.toStringAsFixed(2)}',
               medicine.quantity,
-              '${medicine.gst}%',
               '\$${itemTotal.toStringAsFixed(2)}',
             ];
           }).toList();
@@ -108,8 +90,8 @@ class SalesBillPdfUtils {
                     children: [
                       pw.Text("Customer Details:",
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text("Name: $customerName"),
-                      pw.Text("Contact: $customerContactNumber"),
+                      pw.Text("Name: ${salesBill.customerName}"),
+                      pw.Text("Contact: ${salesBill.customerContactNumber}"),
                     ],
                   ),
                   pw.Column(
@@ -127,10 +109,10 @@ class SalesBillPdfUtils {
 
               // Invoice Details
               pw.Text(
-                "Invoice No: ${generateInvoiceNumber()}",
+                "Invoice No: ${salesBill.invoiceNumber}",
                 style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               ),
-              pw.Text("Date: ${DateTime.now().toString().split(' ')[0]}"),
+              pw.Text("Date: ${salesBill.date.toString().split(' ')[0]}"),
               pw.SizedBox(height: 20),
 
               // Product Table
@@ -141,7 +123,6 @@ class SalesBillPdfUtils {
                   'Expiry Date',
                   'Price/Unit',
                   'Quantity',
-                  'GST',
                   'Total',
                 ],
                 data: medicineData,
@@ -166,20 +147,7 @@ class SalesBillPdfUtils {
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
                       pw.Text(
-                        'Subtotal: \$${totalAmount.toStringAsFixed(2)}',
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                      ),
-                      pw.Text(
-                        'CGST: \$${totalCGST.toStringAsFixed(2)}',
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                      ),
-                      pw.Text(
-                        'SGST: \$${totalSGST.toStringAsFixed(2)}',
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                      ),
-                      pw.Divider(),
-                      pw.Text(
-                        'Total Amount: \$${(totalAmount + totalCGST + totalSGST).toStringAsFixed(2)}',
+                        'Total Amount: \$${totalAmount.toStringAsFixed(2)}',
                         style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 16,

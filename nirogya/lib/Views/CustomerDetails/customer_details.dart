@@ -4,10 +4,11 @@ import 'package:nirogya/Data/Sales Bill/sales_bill_repo.dart';
 import 'package:nirogya/Model/Sales Bill/sales_bill.dart';
 import 'package:nirogya/Data/Added Medicine/added_medicine_repo.dart';
 import 'package:nirogya/Model/Medicine/medicine.dart';
+import 'package:nirogya/Model/Scanned Medicine/scanned_medicine.dart'; // Import ScannedMedicine model
+import 'package:nirogya/Utils/testing_utils.dart';
 import '../../Utils/mobilePdfDownloader.dart';
 import '../../Utils/sales_bill_pdf.dart'; // Import the PDF utility
 import '../../Utils/webPdfDownloader.dart';
-// import 'sales_bill_pdf_utils.dart'; // Import the new utility
 
 class CustomerDetailsPage extends StatefulWidget {
   final List<Map<String, dynamic>> scannedItems;
@@ -29,15 +30,34 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
   Future<void> _saveSalesBill() async {
     final addedMedicineRepo = AddedMedicineRepository();
 
+    // Fetch full details of each medicine using its ID
+    final List<Medicine> medicines = [];
     for (var item in widget.scannedItems) {
       final medicine = await addedMedicineRepo.getAddedMedicineById(item['id']);
       if (medicine != null) {
-        // Decrease the quantity
-        medicine.finalMedicine.medicine.quantity -= item['quantity'] as int;
+        // Add the full medicine details to the list
+        final medicineCopy = Medicine(
+          productName: medicine.finalMedicine.medicine.productName,
+          price: medicine.finalMedicine.medicine.price,
+          quantity: item['quantity'], // Use the quantity from scannedItems
+          expiryDate: medicine.finalMedicine.medicine.expiryDate,
+          batch: medicine.finalMedicine.medicine.batch,
+          dealerName: medicine.finalMedicine.medicine.dealerName,
+          gst: medicine.finalMedicine.medicine.gst,
+          companyName: medicine.finalMedicine.medicine.companyName,
+          alertQuantity: medicine.finalMedicine.medicine.alertQuantity,
+          description: medicine.finalMedicine.medicine.description,
+          imagePath: medicine.finalMedicine.medicine.imagePath,
+        );
+        medicines.add(medicineCopy);
 
-        // Remove the scanned barcodes
-        medicine.scannedBarcodes.removeWhere(
-            (barcode) => item['scannedBarcodes'].contains(barcode));
+        // Remove the scanned barcodes from the medicine
+        final scannedBarcodes = item['scannedBarcodes'] ?? [];
+        medicine.scannedBarcodes
+            .removeWhere((barcode) => scannedBarcodes.contains(barcode));
+
+        // Update the quantity in the repository
+        medicine.finalMedicine.medicine.quantity -= item['quantity'] as int;
 
         // If the quantity is zero, remove the medicine
         if (medicine.finalMedicine.medicine.quantity <= 0) {
@@ -56,21 +76,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
     final salesBill = SalesBill(
       invoiceNumber: invoiceNumber!,
       date: DateTime.now(),
-      medicines: widget.scannedItems.map((item) {
-        return Medicine(
-          productName: item['name'],
-          price: item['price'],
-          quantity: item['quantity'],
-          expiryDate: item['expiryDate'] ?? '',
-          batch: item['batch'] ?? '',
-          dealerName: item['dealerName'] ?? '',
-          gst: item['gst'] ?? 0,
-          companyName: item['companyName'] ?? '',
-          alertQuantity: item['alertQuantity'] ?? 0,
-          description: item['description'] ?? '',
-          imagePath: item['imagePath'] ?? '',
-        );
-      }).toList(),
+      medicines:
+          medicines, // Use the full medicine details with correct quantity
       customerName: nameController.text.isNotEmpty ? nameController.text : '-',
       customerContactNumber:
           numberController.text.isNotEmpty ? numberController.text : '-',
@@ -121,10 +128,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                         // Generate the PDF and share via WhatsApp
                         final pdfBytes =
                             await SalesBillPdfUtils.generateSalesBillPdf(
-                          scannedItems: widget.scannedItems,
-                          customerName: nameController.text,
-                          customerContactNumber: numberController.text,
-                          paymentMethod: selectedPaymentOption,
+                          invoiceNumber:
+                              invoiceNumber!, // Pass the invoice number
                         );
 
                         if (kIsWeb) {
@@ -171,10 +176,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                         // Generate the PDF for printing
                         final pdfBytes =
                             await SalesBillPdfUtils.generateSalesBillPdf(
-                          scannedItems: widget.scannedItems,
-                          customerName: nameController.text,
-                          customerContactNumber: numberController.text,
-                          paymentMethod: selectedPaymentOption,
+                          invoiceNumber:
+                              invoiceNumber!, // Pass the invoice number
                         );
 
                         if (kIsWeb) {

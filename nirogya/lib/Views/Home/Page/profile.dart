@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -9,6 +11,10 @@ import 'package:nirogya/Views/Medicine%20Queue%20Screen/medicine_queue_screen.da
 import 'package:nirogya/Widget/staff_list.dart';
 import 'package:nirogya/Views/Settings%20Screen/settings_screen.dart';
 import 'package:nirogya/Views/Subscription%20Screen/subscription_screen.dart';
+import 'package:nirogya/Data/User/user_repository.dart'; // Import the UserRepository
+import 'package:nirogya/Model/User/user.dart';
+
+import '../../../Utils/testing_utils.dart'; // Import the User model
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -18,15 +24,37 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  final UserRepository _userRepository = UserRepository();
+  User? _user; // To store user data
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserDetails(); // Load user details when the widget initializes
+  }
+
+  // Load user details from the repository
+  Future<void> _loadUserDetails() async {
+    await TestingUtils.printAllEmployees();
+
+    final user = await _userRepository.getUser();
+    if (mounted) {
+      setState(() {
+        _user = user;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Center(
             child: Column(
               children: [
+                // Profile Image
                 Container(
                   height: 150,
                   width: 150,
@@ -37,24 +65,34 @@ class _ProfileState extends State<Profile> {
                       width: 3,
                     ),
                     shape: BoxShape.circle,
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/profile_picture.png'),
-                      fit: BoxFit.cover,
-                    ),
+                    image: _user?.profileImagePath != null
+                        ? DecorationImage(
+                            image: FileImage(File(_user!.profileImagePath!)),
+                            fit: BoxFit.cover,
+                          )
+                        : const DecorationImage(
+                            image:
+                                AssetImage('assets/images/profile_picture.png'),
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'Rahul Yadav',
-                  style: TextStyle(
+                // User Name
+                Text(
+                  _user?.name ??
+                      'Rahul Yadav', // Default name if user data is null
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
                     fontFamily: 'Poppins',
                   ),
                 ),
-                const Text(
-                  'GSTIN: 27XXXXX1234XX1Z5',
-                  style: TextStyle(
+                // GSTIN Number
+                Text(
+                  _user?.gstin ??
+                      'GSTIN: 27XXXXX1234XX1Z5', // Default GSTIN if user data is null
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                     color: Colors.grey,
@@ -72,7 +110,8 @@ class _ProfileState extends State<Profile> {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => EditProfileScreen()));
                   },
-                  child: _buildOption("assets/images/Profile.png", 'Profile')),
+                  child: _buildOption(
+                      "assets/images/Profile.png", 'Edit Profile')),
               const SizedBox(height: 10),
               GestureDetector(
                   onTap: () {
@@ -112,7 +151,7 @@ class _ProfileState extends State<Profile> {
                       builder: (context) => SubscriptionScreen()));
                 },
                 child: _buildOption("assets/images/Star.png", 'Premium',
-                    textColor: Colors.amber),
+                    textColor: Color(0xFFD4AF37)),
               ),
               const SizedBox(height: 5),
               const Divider(

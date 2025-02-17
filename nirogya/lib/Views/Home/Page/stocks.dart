@@ -1,18 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:nirogya/View%20Model/Dealer/dealer_view_model.dart';
+import 'package:intl/intl.dart';
 import 'package:nirogya/Views/Add%20Stock%20Scanner/scanner_add_stock.dart';
-import 'package:nirogya/Views/AddProductBills/add_product_bills.dart';
 import 'package:nirogya/Views/Added%20Product%20Screen/added_product_list.dart';
 import 'package:nirogya/Views/Dealers%20List%20screen/dealers_list.dart';
-import 'package:nirogya/Widget/confirmation_dailog.dart';
 import 'package:nirogya/Widget/search_widget.dart';
 import 'package:nirogya/Widget/stocks_card.dart';
-import 'package:nirogya/Views/Barcode%20Scanner%20Bills/barcode_scanner_bills.dart';
-import 'package:provider/provider.dart';
 
-import '../../../Model/Dealer/dealer.dart';
+import '../../../Data/Added Medicine/added_medicine_repo.dart';
 
 class Stocks extends StatefulWidget {
   const Stocks({super.key});
@@ -22,26 +18,69 @@ class Stocks extends StatefulWidget {
 }
 
 class _StocksState extends State<Stocks> {
+  int expiredCount = 0;
+  int lowStockCount = 0;
+  Future<void> _fetchMedicineData() async {
+    final addedMedicineRepo = AddedMedicineRepository();
+    final addedMedicines = await addedMedicineRepo.getAllAddedMedicines();
+
+    final now = DateTime.now();
+    DateFormat format = DateFormat("dd/MM/yyyy");
+
+    // Calculate expired medicines
+    expiredCount = addedMedicines.where((medicine) {
+      try {
+        DateTime expiryDate =
+            format.parse(medicine.finalMedicine.medicine.expiryDate);
+        return expiryDate.isBefore(now);
+      } catch (e) {
+        print(
+            "Error parsing date: ${medicine.finalMedicine.medicine.expiryDate}");
+        return false; // Skip invalid dates
+      }
+    }).length;
+
+    // Calculate low stock medicines
+    lowStockCount = addedMedicines.where((medicine) {
+      return medicine.finalMedicine.medicine.quantity < 5;
+    }).length;
+
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (mounted) {
+      _fetchMedicineData();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        SizedBox(
+          height: 5,
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            StocksCard(title: "Expired", amount: "4", isYellow: false),
-            StocksCard(title: "Soon Expiry", amount: "9", isYellow: true)
+            StocksCard(
+                title: "Expired", amount: "$expiredCount", isYellow: false),
+            StocksCard(
+                title: "Soon Expiry", amount: "$expiredCount", isYellow: true)
           ],
         ),
-        SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            StocksCard(title: "Out of Stock", amount: "4", isYellow: false),
-            StocksCard(title: "Low Stock", amount: "9", isYellow: true)
-          ],
-        ),
-        SizedBox(height: 20),
+        const SizedBox(height: 15),
+        // const Row(
+        //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+        //   children: [
+        //     StocksCard(title: "Out of Stock", amount: "4", isYellow: false),
+        //     StocksCard(title: "Low Stock", amount: "9", isYellow: true)
+        //   ],
+        // ),
+        // const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -54,9 +93,13 @@ class _StocksState extends State<Stocks> {
               ),
               child: TextButton(
                 onPressed: () {
-                  ShowDailog(context);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ScannerAddStock(),
+                    ),
+                  );
                 },
-                child: Text(
+                child: const Text(
                   "Add Stocks",
                   style: TextStyle(
                       color: Colors.white,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+
 import '../../../Utils/permission_handler.dart';
 import '../../../Widget/expiry_card.dart';
 import '../../../Widget/greetingWidget.dart';
@@ -34,46 +34,6 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
-  /// Checks for permissions when the screen loads
-  // Future<void> _checkPermissions() async {
-  //   bool permissionsGranted =
-  //       await PermissionHandlerUtil.requestPermissions(context);
-  //   if (!permissionsGranted) {
-  //     // Exit the app or restrict functionality if permissions are not granted
-  //     WidgetsBinding.instance.addPostFrameCallback((_) {
-  //       _showExitDialog();
-  //     });
-  //   }
-  // }
-
-  /// Shows a dialog to exit the app if permissions are not granted
-  // void _showExitDialog() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Permissions Required'),
-  //       content: const Text(
-  //           'This app cannot function without camera and storage permissions. Please allow them to proceed.'),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () {
-  //             Navigator.of(context).pop();
-  //             _checkPermissions(); // Retry permission request
-  //           },
-  //           child: const Text('Retry'),
-  //         ),
-  //         TextButton(
-  //           onPressed: () {
-  //             Navigator.of(context).pop();
-  //             openAppSettings(); // Open device settings
-  //           },
-  //           child: const Text('Settings'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -84,13 +44,13 @@ class _DashboardState extends State<Dashboard> {
         SizedBox(height: 35),
         Container(
           decoration: BoxDecoration(
-              border:
-                  Border(left: BorderSide(color: Color(0xff920000), width: 3))),
+            border:
+                Border(left: BorderSide(color: Color(0xff920000), width: 3)),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween, // Aligns content to both ends
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Sales Graph',
@@ -99,7 +59,6 @@ class _DashboardState extends State<Dashboard> {
                       fontSize: 24,
                       fontWeight: FontWeight.w500),
                 ),
-                // Dropdown button at the end
                 Container(
                   height: 30,
                   child: Padding(
@@ -127,14 +86,16 @@ class _DashboardState extends State<Dashboard> {
           ),
         ),
         SizedBox(height: 10),
-        TrendLineBarChart(),
+        TrendLineBarChart(
+            selectedPeriod: _selectedValue), // Pass selected period
         SizedBox(height: 25),
         SalesSlide(),
         SizedBox(height: 25),
         Container(
           decoration: BoxDecoration(
-              border:
-                  Border(left: BorderSide(color: Color(0xff920000), width: 3))),
+            border:
+                Border(left: BorderSide(color: Color(0xff920000), width: 3)),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: const Text(
@@ -146,14 +107,16 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
         ),
+
         ExpiryPieChart(expiryData: expiryData),
         SizedBox(height: 10),
         ExpiryStatsSlide(),
         SizedBox(height: 25),
         Container(
           decoration: BoxDecoration(
-              border:
-                  Border(left: BorderSide(color: Color(0xff920000), width: 3))),
+            border:
+                Border(left: BorderSide(color: Color(0xff920000), width: 3)),
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: const Text(
@@ -165,6 +128,7 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
         ),
+
         StocksPieChart(expiryData: expiryData),
         SizedBox(height: 10),
         StockStatsSlide(),

@@ -20,8 +20,6 @@ class DealerRepository {
 
   Future<Dealer?> getDealerByKey(dynamic key) async {
     final box = await _openBox();
-    var dealer = box.get(1);
-    print(dealer?.name);
     return box.get(key);
   }
 
@@ -30,13 +28,34 @@ class DealerRepository {
     await box.put(key, updatedDealer);
   }
 
-  Future<void> deleteDealer(dynamic key) async {
+  Future<void> deleteDealerByKey(dynamic key) async {
     final box = await _openBox();
     await box.delete(key);
+  }
+
+  Future<void> deleteDealer(Dealer dealer) async {
+    final box = await _openBox();
+    final dealerKey = _findDealerKey(box, dealer);
+    if (dealerKey != null) {
+      await box.delete(dealerKey);
+    } else {
+      throw Exception("Dealer not found in the database");
+    }
   }
 
   Future<void> clearAllDealers() async {
     final box = await _openBox();
     await box.clear();
+  }
+
+  // Helper method to find the key of a dealer in the box
+  dynamic _findDealerKey(Box<Dealer> box, Dealer dealer) {
+    for (var key in box.keys) {
+      final currentDealer = box.get(key);
+      if (currentDealer == dealer) {
+        return key;
+      }
+    }
+    return null;
   }
 }

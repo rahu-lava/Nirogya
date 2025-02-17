@@ -52,34 +52,42 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
       ),
     );
 
+    // If the medicine is not found OR the barcode is NOT in stock, exit
+    if (medicine.finalMedicine.id.isEmpty ||
+        !medicine.scannedBarcodes.contains(barcode)) {
+      return; // Do nothing if the medicine isn't found or the barcode is not in stock
+    }
+
     // If the medicine is found
-    if (medicine.finalMedicine.id.isNotEmpty) {
-      // Check if the barcode is already scanned
-      if (!scannedBarcodes.contains(barcode)) {
-        setState(() {
-          // Check if the medicine is already in the scanned items list
-          final existingItemIndex = scannedItems.indexWhere(
-            (item) => item['id'].startsWith(baseId),
-          );
+    // if (medicine.finalMedicine.id.isNotEmpty) {
+    // Check if the barcode is already scanned
+    if (!scannedBarcodes.contains(barcode)) {
+      setState(() {
+        // Check if the medicine is already in the scanned items list
+        final existingItemIndex = scannedItems.indexWhere(
+          (item) => item['id'].startsWith(baseId),
+        );
 
-          if (existingItemIndex != -1) {
-            // If the medicine is already in the list, increase its quantity
-            scannedItems[existingItemIndex]['quantity'] += 1;
-          } else {
-            // If the medicine is not in the list, add it
-            scannedItems.add({
-              'id': medicine.finalMedicine.id, // Use the base ID
-              'name': medicine.finalMedicine.medicine.productName,
-              'quantity': 1,
-              'price': medicine.finalMedicine.medicine.price,
-              'scannedBarcodes': [barcode], // Include the scanned barcode
-            });
-          }
+        if (existingItemIndex != -1) {
+          // If the medicine is already in the list, increase its quantity
+          scannedItems[existingItemIndex]['quantity'] += 1;
 
-          // Add the barcode to the temporary array
-          scannedBarcodes.add(barcode);
-        });
-      }
+          // Append the scanned barcode to the existing list
+          scannedItems[existingItemIndex]['scannedBarcodes'].add(barcode);
+        } else {
+          // If the medicine is not in the list, add it
+          scannedItems.add({
+            'id': medicine.finalMedicine.id, // Use the base ID
+            'name': medicine.finalMedicine.medicine.productName,
+            'quantity': 1,
+            'price': medicine.finalMedicine.medicine.price,
+            'scannedBarcodes': [barcode], // Include the scanned barcode
+          });
+        }
+
+        // Add the barcode to the temporary array
+        scannedBarcodes.add(barcode);
+      });
     }
   }
 
@@ -159,7 +167,7 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
                           final item = scannedItems[index];
                           return ListTile(
                             title: Text(
-                              item['name'] ?? 'Unknown',
+                              item['name']  ?? 'Unknown',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text('Quantity: ${item['quantity']}'),
@@ -197,6 +205,8 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
                         ElevatedButton(
                           onPressed: () {
                             // Pass the scanned items to the CustomerDetailsPage
+                            print("printing scanned items ---");
+                            print(scannedItems);
                             Navigator.of(context).pushReplacement(
                               MaterialPageRoute(
                                 builder: (context) => CustomerDetailsPage(

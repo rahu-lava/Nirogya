@@ -76,9 +76,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // TestingUtils.printAllScannedMedicines();
-    ScannedMedicineRepository smr = ScannedMedicineRepository();
-    smr.clearAllScannedMedicines();
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.white,

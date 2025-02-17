@@ -2,9 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:nirogya/Data/Scanned%20Medicine/scanned_medicine_repo.dart';
 import 'package:nirogya/Model/Medicine/medicine.dart';
 import 'package:nirogya/Model/Final Medicine/final_medicine.dart';
 import 'package:nirogya/Data/Medicine/medicine_repository.dart';
+import 'package:nirogya/Model/Scanned%20Medicine/scanned_medicine.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -24,6 +26,8 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
   final MedicineQueueRepository _medicineQueueRepo = MedicineQueueRepository();
   final FinalMedicineRepository _finalMedicineRepo = FinalMedicineRepository();
   final AddedMedicineRepository _addedMedicineRepo = AddedMedicineRepository();
+  final ScannedMedicineRepository _scannedMedicineRepo =
+      ScannedMedicineRepository();
   final FinalMedicineHistoryRepository _finalMedicineHistoryRepo =
       FinalMedicineHistoryRepository();
   List<Medicine> _medicines = [];
@@ -35,7 +39,7 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
   }
 
   Future<void> _initializeData() async {
-    await _medicineQueueRepo.generateSampleMedicines(); // Generate sample data
+    // Generate sample data
     await _loadMedicines(); // Load medicines into the list
   }
 
@@ -290,6 +294,21 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
           "batch": medicine.batch,
         });
       }
+
+      // Save the medicine to the ScannedMedicine repository
+      final scannedMedicine = ScannedMedicine(
+        scannedBarcodes: [], // Initially empty, will be populated below
+        finalMedicine: finalMedicine,
+      );
+
+      // Add all barcodes to the scannedBarcodes list
+      for (var i = 1; i <= medicine.quantity; i++) {
+        final barcodeId = '$uniqueId${i.toString().padLeft(3, '0')}';
+        scannedMedicine.scannedBarcodes.add(barcodeId);
+      }
+
+      // Save the ScannedMedicine object in the repository using the base ID as the key
+      await _scannedMedicineRepo.addScannedMedicine2(uniqueId, scannedMedicine);
     }
 
     // Generate PDF with barcodes in a 13x5 grid layout

@@ -112,7 +112,7 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildInputFieldNum(
+                        child: _buildInputFieldNum2(
                           label: "Price",
                           hintText: "\$100",
                           required: true,
@@ -412,6 +412,54 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
               borderSide: BorderSide(color: Colors.red.shade200, width: 1),
             ),
             // enabled: false,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 10,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInputFieldNum2({
+    required String label,
+    required String hintText,
+    bool required = false,
+    bool isFullWidth = false,
+    TextEditingController? controller,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text.rich(
+          TextSpan(
+            text: label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            children: [
+              if (required)
+                const TextSpan(
+                  text: " *",
+                  style: TextStyle(color: Colors.red),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5),
+        TextField(
+          keyboardType: const TextInputType.numberWithOptions(
+              decimal: true), // Allow decimal input
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(
+                r'^\d*\.?\d{0,2}')), // Allow digits and up to 2 decimal places
+          ],
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.red.shade200, width: 1),
+            ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 15,
               vertical: 10,

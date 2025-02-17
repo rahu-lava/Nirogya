@@ -18,7 +18,7 @@ class _AddDealerScreenState extends State<AddDealerScreen> {
   final TextEditingController gstinController = TextEditingController();
   bool isWhatsAppSame = false;
 
-  void _proceed() {
+  void _proceed() async {
     if (nameController.text.isNotEmpty &&
         contactController.text.isNotEmpty &&
         gstinController.text.isNotEmpty) {
@@ -29,29 +29,29 @@ class _AddDealerScreenState extends State<AddDealerScreen> {
         hasWhatsApp: isWhatsAppSame,
       );
 
-      Provider.of<DealerViewModel>(context, listen: false)
-          .addDealer(newDealer)
-          .then((_) {
-        if (Provider.of<DealerViewModel>(context, listen: false).status) {
-          ToastService.showSuccessToast(
-            context,
-            length: ToastLength.medium,
-            message: "Dealer saved successfully!",
-          );
-          Navigator.pop(context, true);
-        } else {
-          ToastService.showErrorToast(
-            context,
-            length: ToastLength.medium,
-            message: "Failed to save the details!",
-          );
-        }
-      });
+      await Provider.of<DealerViewModel>(context, listen: false)
+          .addDealer(newDealer);
+
+      if (Provider.of<DealerViewModel>(context, listen: false).status) {
+        ToastService.showSuccessToast(
+          context,
+          length: ToastLength.medium,
+          message: "Dealer saved successfully!",
+        );
+        Navigator.pop(context, true);
+      } else {
+        ToastService.showWarningToast(
+          context,
+          length: ToastLength.medium,
+          message:
+              "Dealer with the same name already exists! Please update the dealer name.",
+        );
+      }
     } else {
       ToastService.showWarningToast(
         context,
         length: ToastLength.medium,
-        message: "Please fill all fields! ",
+        message: "Please fill all fields!",
       );
     }
   }

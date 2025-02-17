@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +14,8 @@ class SearchStockWidget extends StatefulWidget {
 
 class _SearchStockWidgetState extends State<SearchStockWidget> {
   TextEditingController _searchController = TextEditingController();
-  final AddedMedicineRepository _addedMedicineRepo = AddedMedicineRepository(); // Added Medicine repository
+  final AddedMedicineRepository _addedMedicineRepo =
+      AddedMedicineRepository(); // Added Medicine repository
   List<ScannedMedicine> _addedMedicines = []; // List of added medicines
   List<ScannedMedicine> _filteredMedicines = []; // Filtered list of medicines
 
@@ -25,10 +28,15 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
   // Fetch added medicines from the repository
   Future<void> _loadAddedMedicines() async {
     final medicines = await _addedMedicineRepo.getAllAddedMedicines();
-    setState(() {
-      _addedMedicines = medicines;
-      _filteredMedicines = medicines; // Initialize filtered list with all medicines
-    });
+
+    // Check if the widget is still mounted before calling setState
+    if (mounted) {
+      setState(() {
+        _addedMedicines = medicines;
+        _filteredMedicines =
+            medicines; // Initialize filtered list with all medicines
+      });
+    }
   }
 
   // Filter medicines based on search query
@@ -65,39 +73,42 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                   Icons.search,
                   color: Color(0xff920000), // Always red
                 ),
-                suffixIcon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.mic,
-                        color: Color(0xff920000), // Always red
-                      ),
-                      onPressed: () {
-                        // Handle microphone icon action
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.filter_list,
-                        color: Color(0xff920000), // Always red
-                      ),
-                      onPressed: () {
-                        // Handle filter icon action
-                      },
-                    ),
-                  ],
-                ),
+                // suffixIcon: Row(
+                //   mainAxisSize: MainAxisSize.min,
+                //   children: [
+                //     IconButton(
+                //       icon: Icon(
+                //         Icons.mic,
+                //         color: Color(0xff920000), // Always red
+                //       ),
+                //       onPressed: () {
+                //         // Handle microphone icon action
+                //       },
+                //     ),
+                //     IconButton(
+                //       icon: Icon(
+                //         Icons.filter_list,
+                //         color: Color(0xff920000), // Always red
+                //       ),
+                //       onPressed: () {
+                //         // Handle filter icon action
+                //       },
+                //     ),
+                //   ],
+                // ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0), // Set border radius
+                  borderRadius:
+                      BorderRadius.circular(15.0), // Set border radius
                   borderSide: BorderSide(color: Colors.grey),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0), // Set border radius
+                  borderRadius:
+                      BorderRadius.circular(15.0), // Set border radius
                   borderSide: BorderSide(color: Colors.grey),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0), // Set border radius
+                  borderRadius:
+                      BorderRadius.circular(15.0), // Set border radius
                   borderSide: BorderSide(color: Color(0xff920000)),
                 ),
               ),
@@ -128,7 +139,8 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                       borderRadius: BorderRadius.circular(5),
                       border: Border(
                         right: BorderSide(
-                          color: const Color.fromARGB(255, 204, 28, 16), // Red border for stock
+                          color: const Color.fromARGB(
+                              255, 204, 28, 16), // Red border for stock
                           width: 4.5,
                         ),
                       ),
@@ -142,13 +154,30 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                             // Medicine Image
                             Container(
                               decoration: BoxDecoration(
-                                color: Color.fromARGB(255, 255, 255, 255).withOpacity(0.8),
+                                color: Color.fromARGB(255, 255, 255, 255)
+                                    .withOpacity(0.8),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Image.asset(
-                                "assets/images/no_preview_img.webp",
+                              child:
+                                  // Image.file(
+                                  //   "assets/images/no_preview_img.webp",
+                                  //   height: 100,
+                                  //   width: 100,
+                                  // ),
+                                  Image.file(
+                                File(
+                                    medicine.finalMedicine.medicine.imagePath!),
                                 height: 100,
                                 width: 100,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    "assets/images/no_preview_img.webp", // Fallback image
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.contain,
+                                  );
+                                },
                               ),
                             ),
                             SizedBox(width: 10),
@@ -162,7 +191,8 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                                   // Medicine Name
                                   Container(
                                     child: Text(
-                                      medicine.finalMedicine.medicine.productName,
+                                      medicine
+                                          .finalMedicine.medicine.productName,
                                       style: TextStyle(
                                         fontSize: 22,
                                         fontFamily: 'Poppins',
@@ -175,11 +205,14 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                                   // Expiry, Quantity, and Batch
                                   Container(
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               "Expiry: ${medicine.finalMedicine.medicine.expiryDate}",
@@ -199,7 +232,8 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                                           ],
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5.0),
                                           child: Text(
                                             "₹${medicine.finalMedicine.medicine.price}",
                                             style: TextStyle(fontSize: 24),

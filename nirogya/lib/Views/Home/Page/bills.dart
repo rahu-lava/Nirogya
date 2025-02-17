@@ -1,14 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nirogya/Data/Scanned%20Medicine/scanned_medicine_repo.dart';
 import 'package:nirogya/Utils/testing_utils.dart';
 import 'package:nirogya/View%20Model/Add%20Purchase/add_purchase_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:toasty_box/toast_enums.dart';
 import 'package:toasty_box/toast_service.dart';
+import '../../../Data/Bill/bill_repository.dart';
+import '../../../Data/Sales Bill/sales_bill_repo.dart';
 import '../../../Model/Dealer/dealer.dart';
 import '../../../View Model/Dealer/dealer_view_model.dart';
-import '../../../View Model/Purchase List/purchase_list_view_model.dart';
 import '../../../Widget/Sales_list.dart';
 import '../../../Widget/bills_card.dart';
 import '../../../Widget/purchase_list.dart';
@@ -27,6 +29,8 @@ class Bills extends StatefulWidget {
 class _BillsState extends State<Bills> {
   late DealerViewModel dealerProvider;
   String? selectedDealer;
+  double totalSalesToday = 0.0;
+  double totalPurchasesThisWeek = 0.0;
 
   Future<void> _initializeDealers() async {
     dealerProvider = context.read<DealerViewModel>();
@@ -37,10 +41,62 @@ class _BillsState extends State<Bills> {
     }
   }
 
+  static Future<double> getTotalSalesForToday() async {
+    final salesBills = await SalesBillRepository.getAllSalesBills();
+    final now = DateTime.now();
+    final todaySales = salesBills.where((bill) {
+      final billDate = DateTime.parse(bill.date.toString());
+      return billDate.year == now.year &&
+          billDate.month == now.month &&
+          billDate.day == now.day;
+    }).toList();
+
+    double totalAmount = todaySales.fold(0.0, (sum, bill) {
+      return sum +
+          bill.medicines.fold(0.0,
+              (sum, medicine) => sum + (medicine.price * medicine.quantity));
+    });
+    print("rahulava :" + totalAmount.toString());
+
+    return totalAmount;
+  }
+
+  static Future<double> getTotalPurchasesForWeek() async {
+    final bills = await BillRepository.getAllBills();
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(Duration(days: 6));
+
+    final weeklyBills = bills.where((bill) {
+      final billDate = DateTime.parse(bill.date.toString());
+      return billDate.isAfter(startOfWeek) && billDate.isBefore(endOfWeek);
+    }).toList();
+
+    double totalAmount = weeklyBills.fold(0.0, (sum, bill) {
+      return sum +
+          bill.medicines.fold(0.0,
+              (sum, medicine) => sum + (medicine.price * medicine.quantity));
+    });
+    print("rahulava" + totalAmount.toString());
+    return totalAmount;
+  }
+
+  Future<void> _fetchSalesAndPurchases() async {
+    totalSalesToday = await getTotalSalesForToday();
+    totalPurchasesThisWeek = await getTotalPurchasesForWeek();
+    if(mounted){
+   setState(() {});
+    }
+ 
+  }
+
   @override
   void initState() {
     super.initState();
-    _initializeDealers();
+    if (mounted) {
+      _initializeDealers();
+      _fetchSalesAndPurchases();
+    }
     // fetchDealer(context);
   }
 
@@ -48,14 +104,21 @@ class _BillsState extends State<Bills> {
   Widget build(BuildContext context) {
     TestingUtils.printAllAddedMedicines();
     TestingUtils.printAllSalesBills();
+    ScannedMedicineRepository().printAllScannedMedicines();
+
     return Column(
       children: [
         const SizedBox(height: 10),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            BillsCard(title: "Sales \nToday", amount: "2k"),
-            BillsCard(title: "Pending \nPayments", amount: "1.2k"),
+            BillsCard(
+                title: "Sales \nToday",
+                amount: "${((totalSalesToday / 1000)).toStringAsFixed(1)}k"),
+            BillsCard(
+                title: "Purchase \nThis week",
+                amount:
+                    "${(totalPurchasesThisWeek / 1000).toStringAsFixed(1)}k"),
           ],
         ),
         const SizedBox(height: 20),
