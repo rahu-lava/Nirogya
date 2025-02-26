@@ -132,7 +132,7 @@ class _SalesListState extends State<SalesList> {
                       ),
                     ),
                     trailing: Text(
-                      '\$${totalAmount.toStringAsFixed(2)}', // Display total amount
+                      '₹${totalAmount.toStringAsFixed(2)}', // Display total amount
                       style: TextStyle(
                         fontSize: 18,
                         fontFamily: 'Poppins',

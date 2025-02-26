@@ -167,7 +167,7 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
                           final item = scannedItems[index];
                           return ListTile(
                             title: Text(
-                              item['name']  ?? 'Unknown',
+                              item['name'] ?? 'Unknown',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text('Quantity: ${item['quantity']}'),
@@ -218,7 +218,10 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                           ),
-                          child: Text('Done'),
+                          child: Text(
+                            'Done',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ],
                     ),

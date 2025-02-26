@@ -81,10 +81,10 @@ Future<void> generatePurchaseBillPdfBytes(bool isShare) async {
             medicine.productName,
             medicine.batch,
             medicine.expiryDate,
-            '\$${medicine.price.toStringAsFixed(2)}',
+            '₹${medicine.price.toStringAsFixed(2)}',
             medicine.quantity,
             '${medicine.gst}%',
-            '\$${itemTotal.toStringAsFixed(2)}',
+            '₹${itemTotal.toStringAsFixed(2)}',
           ];
         }).toList();
 
@@ -172,20 +172,20 @@ Future<void> generatePurchaseBillPdfBytes(bool isShare) async {
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
                     pw.Text(
-                      'Subtotal: \$${totalAmount.toStringAsFixed(2)}',
+                      'Subtotal: ₹${totalAmount.toStringAsFixed(2)}',
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(
-                      'CGST: \$${totalCGST.toStringAsFixed(2)}',
+                      'CGST: ₹${totalCGST.toStringAsFixed(2)}',
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(
-                      'SGST: \$${totalSGST.toStringAsFixed(2)}',
+                      'SGST: ₹${totalSGST.toStringAsFixed(2)}',
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Divider(),
                     pw.Text(
-                      'Total Amount: \$${(totalAmount + totalCGST + totalSGST).toStringAsFixed(2)}',
+                      'Total Amount: ₹${(totalAmount + totalCGST + totalSGST).toStringAsFixed(2)}',
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
                         fontSize: 16,

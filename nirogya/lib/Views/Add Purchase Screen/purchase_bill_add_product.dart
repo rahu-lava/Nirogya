@@ -114,7 +114,7 @@ class _PurchaseBillPageState extends State<PurchaseBillPage> {
                       Expanded(
                         child: _buildInputFieldNum2(
                           label: "Price",
-                          hintText: "\$100",
+                          hintText: "₹100",
                           required: true,
                           controller: priceController,
                         ),

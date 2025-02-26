@@ -65,7 +65,7 @@ class _PurchaseListState extends State<PurchaseList> {
               ],
               onChanged: _filterBills,
               decoration: const InputDecoration(
-                hintText: 'Search Invoice Number',
+                hintText: 'NIR123456',
                 prefixIcon: Icon(
                   Icons.search,
                   color: Color(0xff8B0000),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nirogya/Widget/image_picker.dart';
 
-
 class AddProductPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -45,7 +44,7 @@ class AddProductPage extends StatelessWidget {
                       Expanded(
                         child: _buildInputField(
                           label: "Price",
-                          hintText: "\$100",
+                          hintText: "₹100",
                           required: true,
                         ),
                       ),
@@ -145,7 +144,7 @@ class AddProductPage extends StatelessWidget {
                   SizedBox(height: 15),
                   _buildInventoryDetails(
                     name: "Paracetamol",
-                    price: "\$50",
+                    price: "₹50",
                     quantity: "100",
                     batch: "Batch123",
                     expiry: "12/2025",

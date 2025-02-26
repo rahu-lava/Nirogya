@@ -1,5 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../Model/Sales Bill/sales_bill.dart'; // Import the SalesBill model
+import '../../Model/Sales Bill/sales_bill.dart';
+import '../../Utils/mobilePdfDownloader.dart';
+import '../../Utils/sales_bill_pdf.dart';
+import '../../Utils/webPdfDownloader.dart'; // Import the SalesBill model
 
 class SalesTransactionDetailsScreen extends StatelessWidget {
   final SalesBill salesBill; // Accept the SalesBill object
@@ -188,32 +192,19 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Implement download functionality
-                      print("Download pressed");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      "Download",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Implement share functionality
-                      print("Share pressed");
+                      final pdfBytes =
+                          await SalesBillPdfUtils.generateSalesBillPdf(
+                              invoiceNumber: salesBill
+                                  .invoiceNumber // Pass the salesBill object
+                              );
+
+                      if (kIsWeb) {
+                        WebPdfDownloader.webpdfDownload(pdfBytes, true);
+                      } else {
+                        MobilePdfDownloader.mobilePdfDownload(pdfBytes, true);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -226,6 +217,41 @@ class SalesTransactionDetailsScreen extends StatelessWidget {
                       "Share",
                       style: TextStyle(
                         fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      // Implement share functionality
+                      final pdfBytes =
+                          await SalesBillPdfUtils.generateSalesBillPdf(
+                              invoiceNumber: salesBill
+                                  .invoiceNumber // Pass the salesBill object
+                              );
+
+                      if (kIsWeb) {
+                        WebPdfDownloader.webpdfDownload(pdfBytes, false);
+                      } else {
+                        MobilePdfDownloader.mobilePdfDownload(pdfBytes, false);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      "Print",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

@@ -14,7 +14,8 @@ class EditStockPage extends StatefulWidget {
 }
 
 class _EditStockPageState extends State<EditStockPage> {
-  final AddedMedicineRepository _addedMedicineRepo = AddedMedicineRepository(); // Added Medicine repository
+  final AddedMedicineRepository _addedMedicineRepo =
+      AddedMedicineRepository(); // Added Medicine repository
   final _formKey = GlobalKey<FormState>(); // Form key for validation
   late TextEditingController _productNameController;
   late TextEditingController _priceController;
@@ -30,14 +31,22 @@ class _EditStockPageState extends State<EditStockPage> {
   void initState() {
     super.initState();
     // Initialize controllers with existing medicine data
-    _productNameController = TextEditingController(text: widget.medicine.finalMedicine.medicine.productName);
-    _priceController = TextEditingController(text: widget.medicine.finalMedicine.medicine.price.toString());
-    _quantityController = TextEditingController(text: widget.medicine.finalMedicine.medicine.quantity.toString());
-    _expiryDateController = TextEditingController(text: widget.medicine.finalMedicine.medicine.expiryDate);
-    _batchController = TextEditingController(text: widget.medicine.finalMedicine.medicine.batch);
-    _companyNameController = TextEditingController(text: widget.medicine.finalMedicine.medicine.companyName);
-    _alertQuantityController = TextEditingController(text: widget.medicine.finalMedicine.medicine.alertQuantity.toString());
-    _descriptionController = TextEditingController(text: widget.medicine.finalMedicine.medicine.description);
+    _productNameController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.productName);
+    _priceController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.price.toString());
+    _quantityController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.quantity.toString());
+    _expiryDateController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.expiryDate);
+    _batchController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.batch);
+    _companyNameController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.companyName);
+    _alertQuantityController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.alertQuantity.toString());
+    _descriptionController = TextEditingController(
+        text: widget.medicine.finalMedicine.medicine.description);
   }
 
   @override
@@ -80,7 +89,8 @@ class _EditStockPageState extends State<EditStockPage> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -99,7 +109,7 @@ class _EditStockPageState extends State<EditStockPage> {
                         Expanded(
                           child: _buildInputField(
                             label: "Price",
-                            hintText: "\$100",
+                            hintText: "₹100",
                             controller: _priceController,
                             required: true,
                           ),
@@ -395,7 +405,8 @@ class _EditStockPageState extends State<EditStockPage> {
   // Delete the medicine
   void _deleteStock() async {
     // Delete the medicine
-    await _addedMedicineRepo.deleteAddedMedicine(widget.medicine.finalMedicine.id);
+    await _addedMedicineRepo
+        .deleteAddedMedicine(widget.medicine.finalMedicine.id);
 
     // Show success message
     ScaffoldMessenger.of(context).showSnackBar(

@@ -385,7 +385,10 @@ class _ScannerAddStockState extends State<ScannerAddStock> {
                         backgroundColor: Colors.green,
                         minimumSize: Size(double.infinity, 50),
                       ),
-                      child: Text('Done'),
+                      child: Text(
+                        'Done',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),

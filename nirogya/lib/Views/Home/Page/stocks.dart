@@ -19,12 +19,16 @@ class Stocks extends StatefulWidget {
 
 class _StocksState extends State<Stocks> {
   int expiredCount = 0;
+  int soonExpiringCount = 0; // New variable for soon expiring medicines
   int lowStockCount = 0;
+
   Future<void> _fetchMedicineData() async {
     final addedMedicineRepo = AddedMedicineRepository();
     final addedMedicines = await addedMedicineRepo.getAllAddedMedicines();
 
     final now = DateTime.now();
+    final soonExpiryThreshold =
+        now.add(Duration(days: 30)); // 30 days for soon expiring
     DateFormat format = DateFormat("dd/MM/yyyy");
 
     // Calculate expired medicines
@@ -33,6 +37,20 @@ class _StocksState extends State<Stocks> {
         DateTime expiryDate =
             format.parse(medicine.finalMedicine.medicine.expiryDate);
         return expiryDate.isBefore(now);
+      } catch (e) {
+        print(
+            "Error parsing date: ${medicine.finalMedicine.medicine.expiryDate}");
+        return false; // Skip invalid dates
+      }
+    }).length;
+
+    // Calculate soon expiring medicines (excluding expired medicines)
+    soonExpiringCount = addedMedicines.where((medicine) {
+      try {
+        DateTime expiryDate =
+            format.parse(medicine.finalMedicine.medicine.expiryDate);
+        return expiryDate.isAfter(now) &&
+            expiryDate.isBefore(soonExpiryThreshold);
       } catch (e) {
         print(
             "Error parsing date: ${medicine.finalMedicine.medicine.expiryDate}");
@@ -60,27 +78,19 @@ class _StocksState extends State<Stocks> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(
-          height: 5,
-        ),
+        SizedBox(height: 5),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             StocksCard(
                 title: "Expired", amount: "$expiredCount", isYellow: false),
             StocksCard(
-                title: "Soon Expiry", amount: "$expiredCount", isYellow: true)
+                title: "Soon Expiry",
+                amount: "$soonExpiringCount",
+                isYellow: true),
           ],
         ),
         const SizedBox(height: 15),
-        // const Row(
-        //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-        //   children: [
-        //     StocksCard(title: "Out of Stock", amount: "4", isYellow: false),
-        //     StocksCard(title: "Low Stock", amount: "9", isYellow: true)
-        //   ],
-        // ),
-        // const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [

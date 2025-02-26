@@ -58,6 +58,7 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
+            alignment: Alignment.center,
             height: 50,
             child: TextField(
               controller: _searchController,
@@ -73,29 +74,6 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                   Icons.search,
                   color: Color(0xff920000), // Always red
                 ),
-                // suffixIcon: Row(
-                //   mainAxisSize: MainAxisSize.min,
-                //   children: [
-                //     IconButton(
-                //       icon: Icon(
-                //         Icons.mic,
-                //         color: Color(0xff920000), // Always red
-                //       ),
-                //       onPressed: () {
-                //         // Handle microphone icon action
-                //       },
-                //     ),
-                //     IconButton(
-                //       icon: Icon(
-                //         Icons.filter_list,
-                //         color: Color(0xff920000), // Always red
-                //       ),
-                //       onPressed: () {
-                //         // Handle filter icon action
-                //       },
-                //     ),
-                //   ],
-                // ),
                 border: OutlineInputBorder(
                   borderRadius:
                       BorderRadius.circular(15.0), // Set border radius

@@ -70,13 +70,13 @@
 //   for (var item in items) {
 //     final PdfGridRow row = table.rows.add();
 //     row.cells[0].value = item['name'];
-//     row.cells[1].value = '\$${item['pricePerUnit'].toStringAsFixed(2)}';
+//     row.cells[1].value = '₹${item['pricePerUnit'].toStringAsFixed(2)}';
 //     row.cells[2].value = '${item['quantity']}';
 //     row.cells[3].value = '${item['gst']}%';
 //     row.cells[4].value = item['expiry'];
 //     double itemTotal =
 //         (item['pricePerUnit'] * item['quantity']) * (1 + item['gst'] / 100);
-//     row.cells[5].value = '\$${itemTotal.toStringAsFixed(2)}';
+//     row.cells[5].value = '₹${itemTotal.toStringAsFixed(2)}';
 
 //     totalBill += itemTotal;
 //     totalCGST += (item['pricePerUnit'] * item['quantity']) * (item['gst'] / 200);
@@ -96,13 +96,13 @@
 
 //   // Add total at the bottom of the table.
 //   graphics.drawString(
-//     'Total Amount: \$${totalBill.toStringAsFixed(2)}',
+//     'Total Amount: ₹${totalBill.toStringAsFixed(2)}',
 //     PdfStandardFont(PdfFontFamily.helvetica, 12, style: PdfFontStyle.bold),
 //     bounds: const Rect.fromLTWH(10, 400, 250, 20),
 //   );
 
 //   graphics.drawString(
-//     'Total CGST: \$${totalCGST.toStringAsFixed(2)}\nTotal SGST: \$${totalSGST.toStringAsFixed(2)}',
+//     'Total CGST: ₹${totalCGST.toStringAsFixed(2)}\nTotal SGST: ₹${totalSGST.toStringAsFixed(2)}',
 //     PdfStandardFont(PdfFontFamily.helvetica, 12),
 //     bounds: const Rect.fromLTWH(10, 420, 250, 40),
 //   );

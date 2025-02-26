@@ -211,6 +211,7 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
                       "Share",
                       style: TextStyle(
                         fontSize: 16,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -233,6 +234,7 @@ class PurchaseTransactionDetailsScreen extends StatelessWidget {
                       "Print",
                       style: TextStyle(
                         fontSize: 16,
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

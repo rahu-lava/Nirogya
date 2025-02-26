@@ -5,7 +5,7 @@ class ProductList extends StatelessWidget {
   final List<Map<String, String>> medicines = List.generate(20, (index) {
     return {
       "name": "Medicine ${index + 1}",
-      "price": "\$${(index + 1) * 10}",
+      "price": "₹${(index + 1) * 10}",
       "quantity": "Qty: ${index + 5}",
       "batch": "Batch: ${String.fromCharCode(65 + index)}123",
       "expiry": "Expiry: ${index + 1}/2025",

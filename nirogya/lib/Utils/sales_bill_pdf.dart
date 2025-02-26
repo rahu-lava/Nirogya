@@ -59,9 +59,9 @@ class SalesBillPdfUtils {
               medicine.productName,
               medicine.batch,
               medicine.expiryDate,
-              '\$${medicine.price.toStringAsFixed(2)}',
+              "₹${medicine.price.toStringAsFixed(2)}",
               medicine.quantity,
-              '\$${itemTotal.toStringAsFixed(2)}',
+              "₹${itemTotal.toStringAsFixed(2)}",
             ];
           }).toList();
 
@@ -147,7 +147,7 @@ class SalesBillPdfUtils {
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
                       pw.Text(
-                        'Total Amount: \$${totalAmount.toStringAsFixed(2)}',
+                        "Total Amount: ₹${totalAmount.toStringAsFixed(2)}",
                         style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 16,

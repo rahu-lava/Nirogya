@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import for DateFormat
-// import 'package:nirogya/Data/Sales/sales_bill_repo.dart';
 import '../../../Data/Sales Bill/sales_bill_repo.dart';
 
 class TrendLineBarChart extends StatefulWidget {
@@ -19,6 +18,7 @@ class _TrendLineBarChartState extends State<TrendLineBarChart> {
   List<String> xAxisLabels = [];
   bool isLoading = true;
   bool hasData = false;
+  double maxSalesValue = 0.0; // To store the maximum sales value
 
   @override
   void initState() {
@@ -43,6 +43,7 @@ class _TrendLineBarChartState extends State<TrendLineBarChart> {
     final now = DateTime.now();
 
     List<double> salesData = [];
+    maxSalesValue = 0.0; // Reset max value
 
     switch (widget.selectedPeriod) {
       case 'Week':
@@ -61,6 +62,9 @@ class _TrendLineBarChartState extends State<TrendLineBarChart> {
                     (sum, medicine) =>
                         sum + (medicine.price * medicine.quantity));
           });
+          if (totalSales > maxSalesValue) {
+            maxSalesValue = totalSales;
+          }
           return totalSales;
         });
         xAxisLabels = List.generate(7, (index) {
@@ -87,6 +91,9 @@ class _TrendLineBarChartState extends State<TrendLineBarChart> {
                     (sum, medicine) =>
                         sum + (medicine.price * medicine.quantity));
           });
+          if (totalSales > maxSalesValue) {
+            maxSalesValue = totalSales;
+          }
           return totalSales;
         });
         xAxisLabels = List.generate(daysInMonth, (index) {
@@ -113,6 +120,9 @@ class _TrendLineBarChartState extends State<TrendLineBarChart> {
                     (sum, medicine) =>
                         sum + (medicine.price * medicine.quantity));
           });
+          if (totalSales > maxSalesValue) {
+            maxSalesValue = totalSales;
+          }
           return totalSales;
         });
         xAxisLabels = List.generate(12, (index) {
@@ -141,6 +151,18 @@ class _TrendLineBarChartState extends State<TrendLineBarChart> {
       hasData = salesData.any((value) => value > 0);
       isLoading = false;
     });
+  }
+
+  double _calculateYAxisInterval(double maxValue) {
+    if (maxValue <= 100) {
+      return maxValue / 3; // Small interval for small values
+    } else if (maxValue <= 500) {
+      return maxValue / 3; // Medium interval for medium values
+    } else if (maxValue <= 1000) {
+      return maxValue / 3; // Larger interval for larger values
+    } else {
+      return maxValue / 3; // Default interval for very large values
+    }
   }
 
   @override
@@ -206,7 +228,8 @@ class _TrendLineBarChartState extends State<TrendLineBarChart> {
                         leftTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
-                            interval: 100, // Show labels in multiples of 100
+                            interval: _calculateYAxisInterval(
+                                maxSalesValue), // Dynamic interval
                             reservedSize:
                                 40, // Increase reserved space for Y-axis labels
                             getTitlesWidget: (value, meta) {

@@ -15,7 +15,7 @@ import '../../../Widget/Sales_list.dart';
 import '../../../Widget/bills_card.dart';
 import '../../../Widget/purchase_list.dart';
 import '../../Add Dealer Screen/add_dealer.dart';
-import '../../AddProductBills/add_product_bills.dart';
+
 import '../../Barcode Scanner Bills/barcode_scanner_bills.dart';
 import '../../Add Purchase Screen/purchase_bill_add_product.dart';
 
@@ -56,7 +56,7 @@ class _BillsState extends State<Bills> {
           bill.medicines.fold(0.0,
               (sum, medicine) => sum + (medicine.price * medicine.quantity));
     });
-    print("rahulava :" + totalAmount.toString());
+    // print("rahulava :" + totalAmount.toString());
 
     return totalAmount;
   }
@@ -84,10 +84,9 @@ class _BillsState extends State<Bills> {
   Future<void> _fetchSalesAndPurchases() async {
     totalSalesToday = await getTotalSalesForToday();
     totalPurchasesThisWeek = await getTotalPurchasesForWeek();
-    if(mounted){
-   setState(() {});
+    if (mounted) {
+      setState(() {});
     }
- 
   }
 
   @override
@@ -134,7 +133,12 @@ class _BillsState extends State<Bills> {
               ),
               child: TextButton(
                 onPressed: () {
-                  _showDailog();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => BarcodeScannerWithList(),
+                    ),
+                  );
+                  // _showDailog();
                 },
                 child: const Text(
                   "Customer Bill",
@@ -219,114 +223,114 @@ class _BillsState extends State<Bills> {
     );
   }
 
-  void _showDailog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Select Option",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "Poppins",
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => BarcodeScannerWithList(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 120, // Fixed width for both containers
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xff920000),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Column(
-                          children: [
-                            Image.asset(
-                              'assets/images/scanner_icon.png',
-                              height: 50,
-                              width: 50,
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              "Scanner",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                                fontFamily: "Poppins",
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        // Add logic for "Manually" option here
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => const AddProductBills()),
-                        );
-                      },
-                      child: Container(
-                        width: 120, // Fixed width for both containers
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xff920000),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Column(
-                          children: [
-                            Image.asset(
-                              'assets/images/Keyboard.png',
-                              height: 50,
-                              width: 50,
-                            ),
-                            const SizedBox(height: 10),
-                            const Text(
-                              "Manually",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.white,
-                                fontFamily: "Poppins",
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // void _showDailog() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return Dialog(
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(20),
+  //         ),
+  //         child: Padding(
+  //           padding: const EdgeInsets.all(16.0),
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             children: [
+  //               const Text(
+  //                 "Select Option",
+  //                 style: TextStyle(
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.bold,
+  //                   fontFamily: "Poppins",
+  //                 ),
+  //               ),
+  //               const SizedBox(height: 20),
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //                 children: [
+  //                   GestureDetector(
+  //                     onTap: () {
+  //                       Navigator.of(context).pop();
+  //                       Navigator.of(context).push(
+  //                         MaterialPageRoute(
+  //                           builder: (context) => BarcodeScannerWithList(),
+  //                         ),
+  //                       );
+  //                     },
+  //                     child: Container(
+  //                       width: 120, // Fixed width for both containers
+  //                       padding: const EdgeInsets.all(10),
+  //                       decoration: BoxDecoration(
+  //                         color: const Color(0xff920000),
+  //                         borderRadius: BorderRadius.circular(15),
+  //                       ),
+  //                       child: Column(
+  //                         children: [
+  //                           Image.asset(
+  //                             'assets/images/scanner_icon.png',
+  //                             height: 50,
+  //                             width: 50,
+  //                           ),
+  //                           const SizedBox(height: 10),
+  //                           const Text(
+  //                             "Scanner",
+  //                             style: TextStyle(
+  //                               fontSize: 14,
+  //                               fontWeight: FontWeight.w500,
+  //                               color: Colors.white,
+  //                               fontFamily: "Poppins",
+  //                             ),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   GestureDetector(
+  //                     onTap: () {
+  //                       Navigator.of(context).pop();
+  //                       // Add logic for "Manually" option here
+  //                       Navigator.of(context).push(
+  //                         MaterialPageRoute(
+  //                             builder: (context) => const AddProductBills()),
+  //                       );
+  //                     },
+  //                     child: Container(
+  //                       width: 120, // Fixed width for both containers
+  //                       padding: const EdgeInsets.all(10),
+  //                       decoration: BoxDecoration(
+  //                         color: const Color(0xff920000),
+  //                         borderRadius: BorderRadius.circular(15),
+  //                       ),
+  //                       child: Column(
+  //                         children: [
+  //                           Image.asset(
+  //                             'assets/images/Keyboard.png',
+  //                             height: 50,
+  //                             width: 50,
+  //                           ),
+  //                           const SizedBox(height: 10),
+  //                           const Text(
+  //                             "Manually",
+  //                             style: TextStyle(
+  //                               fontSize: 14,
+  //                               fontWeight: FontWeight.w500,
+  //                               color: Colors.white,
+  //                               fontFamily: "Poppins",
+  //                             ),
+  //                           ),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   void _showDealerDialog(BuildContext context) {
     showDialog(

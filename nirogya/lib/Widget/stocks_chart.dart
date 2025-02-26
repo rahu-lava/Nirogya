@@ -1,54 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class StocksPieChart extends StatefulWidget {
-  final Map<String, double>
-      expiryData; // Map to hold expiry data (expired, safe, soon)
+import '../Data/Added Medicine/added_medicine_repo.dart';
 
-  StocksPieChart({required this.expiryData});
-
+class StockDashboard extends StatefulWidget {
   @override
-  _StocksPieChartState createState() => _StocksPieChartState();
+  _StockDashboardState createState() => _StockDashboardState();
 }
 
-class _StocksPieChartState extends State<StocksPieChart> {
-  int touchedIndex = -1;
+class _StockDashboardState extends State<StockDashboard> {
+  Map<String, double> stockData = {}; // For pie chart percentages
+  Map<String, int> stockCounts = {}; // For stats slide counts
+  bool isLoading = true;
 
-  List<PieChartSectionData> showingSections() {
-    return List.generate(widget.expiryData.entries.length, (i) {
-      final MapEntry<String, double> entry =
-          widget.expiryData.entries.elementAt(i);
-      final isTouched = i == touchedIndex;
-      final fontSize = isTouched ? 18.0 : 12.0;
-      final radius = isTouched ? 60.0 : 50.0;
-      final color = getColor(entry.key); // Get color based on expiry category
+  @override
+  void initState() {
+    super.initState();
+    _loadStockData();
+  }
 
-      return PieChartSectionData(
-        color: color,
-        value: entry.value,
-        title: '${entry.value.toStringAsFixed(1)}%',
-        radius: radius,
-        titleStyle: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
-        ),
-      );
+  Future<void> _loadStockData() async {
+    final counts = await StockDataProcessor.getStockCounts(); // Fetch counts
+    final totalMedicines = counts.values.reduce((a, b) => a + b);
+
+    // Calculate percentages for the pie chart
+    final percentages = {
+      'inStock': (counts['inStock']! / totalMedicines) * 100,
+      'lowStock': (counts['lowStock']! / totalMedicines) * 100,
+      'outOfStock': (counts['outOfStock']! / totalMedicines) * 100,
+    };
+
+    setState(() {
+      stockData = percentages;
+      stockCounts = counts;
+      isLoading = false;
     });
   }
 
-  Color getColor(String expiry) {
-    switch (expiry) {
-      case 'expired':
-        return Colors.red;
-      case 'safe':
-        return Colors.green;
-      case 'soon':
-        return Colors.yellow;
-      default:
-        return Colors.grey;
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        StocksPieChart(stockData: stockData), // Pie chart
+        SizedBox(height: 20), // Space between pie chart and stats slide
+        StockStatsSlide(stockCounts: stockCounts), // Stats slide
+      ],
+    );
   }
+}
+
+class StocksPieChart extends StatelessWidget {
+  final Map<String, double> stockData;
+
+  StocksPieChart({required this.stockData});
 
   @override
   Widget build(BuildContext context) {
@@ -59,26 +63,196 @@ class _StocksPieChartState extends State<StocksPieChart> {
         PieChartData(
           pieTouchData: PieTouchData(
             touchCallback: (FlTouchEvent event, pieTouchResponse) {
-              setState(() {
-                if (!event.isInterestedForInteractions ||
-                    pieTouchResponse == null ||
-                    pieTouchResponse.touchedSection == null) {
-                  touchedIndex = -1;
-                  return;
-                }
-                touchedIndex =
-                    pieTouchResponse.touchedSection!.touchedSectionIndex;
-              });
+              // Handle touch interactions if needed
             },
           ),
-          borderData: FlBorderData(
-            show: false,
-          ),
+          borderData: FlBorderData(show: false),
           sectionsSpace: 5,
           centerSpaceRadius: 75,
-          sections: showingSections(),
+          sections: stockData.entries.map((entry) {
+            return PieChartSectionData(
+              color: getColor(entry.key),
+              value: entry.value,
+              title: '${entry.value.toStringAsFixed(1)}%',
+              radius: 50,
+              titleStyle: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            );
+          }).toList(),
         ),
       ),
     );
+  }
+
+  Color getColor(String stockStatus) {
+    switch (stockStatus) {
+      case 'inStock':
+        return Colors.green;
+      case 'lowStock':
+        return Colors.yellow;
+      case 'outOfStock':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+}
+
+class StockStatsSlide extends StatelessWidget {
+  final Map<String, int> stockCounts;
+
+  const StockStatsSlide({super.key, required this.stockCounts});
+
+  @override
+  Widget build(BuildContext context) {
+    // Convert stock counts to stats for the slide
+    final List<Map<String, String>> stockStats = [
+      {
+        'title': 'In Stock',
+        'value': stockCounts['inStock']?.toString() ?? '0',
+        'color': 'green'
+      },
+      {
+        'title': 'Low Stock',
+        'value': stockCounts['lowStock']?.toString() ?? '0',
+        'color': 'yellow'
+      },
+      {
+        'title': 'Out of Stock',
+        'value': stockCounts['outOfStock']?.toString() ?? '0',
+        'color': 'red'
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: SizedBox(
+        height: 55, // Height of the card row
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: stockStats.length, // Number of cards
+          itemBuilder: (context, index) {
+            final data = stockStats[index];
+
+            // Determine the color of the card based on the stats
+            Color cardColor;
+            switch (data['color']) {
+              case 'green':
+                cardColor = Colors.green.shade100;
+                break;
+              case 'yellow':
+                cardColor = Colors.yellow.shade100;
+                break;
+              case 'red':
+                cardColor = Colors.red.shade100;
+                break;
+              default:
+                cardColor = Colors.white;
+            }
+
+            return Container(
+              width: 275, // Width of each card
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Title
+                    Text(
+                      data['title']!,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    // Value
+                    Text(
+                      data['value']!,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class StockDataProcessor {
+  static Future<Map<String, int>> getStockCounts() async {
+    final addedMedicines = await _fetchMedicinesFromRepository();
+
+    int inStockCount = 0;
+    int lowStockCount = 0;
+    int outOfStockCount = 0;
+
+    for (var medicine in addedMedicines) {
+      final quantity = medicine['quantity'];
+      if (quantity > 10) {
+        inStockCount++;
+      } else if (quantity > 0) {
+        lowStockCount++;
+      } else {
+        outOfStockCount++;
+      }
+    }
+
+    return {
+      'inStock': inStockCount,
+      'lowStock': lowStockCount,
+      'outOfStock': outOfStockCount,
+    };
+  }
+
+  // Fetch medicines from AddedMedicineRepository
+  static Future<List<Map<String, dynamic>>>
+      _fetchMedicinesFromRepository() async {
+    final addedMedicineRepo = AddedMedicineRepository();
+    final addedMedicines = await addedMedicineRepo.getAllAddedMedicines();
+
+    if (addedMedicines.isEmpty) {
+      print('No added medicines available.');
+      return [];
+    }
+
+    // Convert medicine data to a list of maps
+    return addedMedicines.map((medicine) {
+      return {
+        'id': medicine.finalMedicine.id,
+        'productName': medicine.finalMedicine.medicine.productName,
+        'quantity': medicine.finalMedicine.medicine.quantity,
+        'batch': medicine.finalMedicine.medicine.batch,
+        'dealerName': medicine.finalMedicine.medicine.dealerName,
+        'gst': medicine.finalMedicine.medicine.gst,
+        'companyName': medicine.finalMedicine.medicine.companyName ?? "N/A",
+        'alertQuantity': medicine.finalMedicine.medicine.alertQuantity ?? "N/A",
+        'description': medicine.finalMedicine.medicine.description ?? "N/A",
+        'imagePath': medicine.finalMedicine.medicine.imagePath ?? "N/A",
+        'scannedBarcodes': medicine.scannedBarcodes,
+      };
+    }).toList();
   }
 }

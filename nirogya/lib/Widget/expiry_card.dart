@@ -1,22 +1,135 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
-class ExpiryStatsSlide extends StatefulWidget {
-  const ExpiryStatsSlide({super.key});
+import '../Data/Added Medicine/added_medicine_repo.dart'; // For date parsing and formatting
 
+class ExpiryPieChart extends StatefulWidget {
   @override
-  State<ExpiryStatsSlide> createState() => _ExpiryStatsSlideState();
+  _ExpiryPieChartState createState() => _ExpiryPieChartState();
 }
 
-class _ExpiryStatsSlideState extends State<ExpiryStatsSlide> {
-  // Mock data for expiry stats
-  final List<Map<String, String>> expiryStats = [
-    {'title': 'Safe', 'value': '120', 'color': 'green'},
-    {'title': 'Soon Expiring', 'value': '25', 'color': 'yellow'},
-    {'title': 'Expired', 'value': '10', 'color': 'red'},
-  ];
+class _ExpiryPieChartState extends State<ExpiryPieChart> {
+  Map<String, double> expiryData = {};
+  bool isLoading = true;
+  int touchedIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadExpiryData();
+  }
+
+  Future<void> _loadExpiryData() async {
+    final data = await ExpiryDataProcessor.getExpiryData();
+    setState(() {
+      expiryData = data;
+      isLoading = false;
+    });
+  }
+
+  List<PieChartSectionData> showingSections() {
+    return List.generate(expiryData.entries.length, (i) {
+      final MapEntry<String, double> entry = expiryData.entries.elementAt(i);
+      final isTouched = i == touchedIndex;
+      final fontSize = isTouched ? 18.0 : 12.0;
+      final radius = isTouched ? 60.0 : 50.0;
+      final color = getColor(entry.key); // Get color based on expiry category
+
+      return PieChartSectionData(
+        color: color,
+        value: entry.value,
+        title: '${entry.value.toStringAsFixed(1)}%',
+        radius: radius,
+        titleStyle: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+      );
+    });
+  }
+
+  Color getColor(String expiry) {
+    switch (expiry) {
+      case 'expired':
+        return Colors.red;
+      case 'safe':
+        return Colors.green;
+      case 'soon':
+        return Colors.yellow;
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          height: 300,
+          width: double.infinity,
+          child: isLoading
+              ? Center(child: CircularProgressIndicator())
+              : PieChart(
+                  PieChartData(
+                    pieTouchData: PieTouchData(
+                      touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                        setState(() {
+                          if (!event.isInterestedForInteractions ||
+                              pieTouchResponse == null ||
+                              pieTouchResponse.touchedSection == null) {
+                            touchedIndex = -1;
+                            return;
+                          }
+                          touchedIndex =
+                              pieTouchResponse.touchedSection!.touchedSectionIndex;
+                        });
+                      },
+                    ),
+                    borderData: FlBorderData(
+                      show: false,
+                    ),
+                    sectionsSpace: 5,
+                    centerSpaceRadius: 75,
+                    sections: showingSections(),
+                  ),
+                ),
+        ),
+        SizedBox(height: 20), // Space between pie chart and stats slide
+        ExpiryStatsSlide(expiryData: expiryData), // Pass the expiry data to the slide
+      ],
+    );
+  }
+}
+
+class ExpiryStatsSlide extends StatelessWidget {
+  final Map<String, double> expiryData;
+
+  const ExpiryStatsSlide({super.key, required this.expiryData});
+
+  @override
+  Widget build(BuildContext context) {
+    // Convert expiry data to stats for the slide
+    final List<Map<String, String>> expiryStats = [
+      {
+        'title': 'Safe',
+        'value': expiryData['safe']?.toStringAsFixed(0) ?? '0',
+        'color': 'green'
+      },
+      {
+        'title': 'Soon Expiring',
+        'value': expiryData['soon']?.toStringAsFixed(0) ?? '0',
+        'color': 'yellow'
+      },
+      {
+        'title': 'Expired',
+        'value': expiryData['expired']?.toStringAsFixed(0) ?? '0',
+        'color': 'red'
+      },
+    ];
+
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: SizedBox(
@@ -49,10 +162,6 @@ class _ExpiryStatsSlideState extends State<ExpiryStatsSlide> {
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(12),
-                // border: Border.all(
-                //   color: const Color.fromARGB(255, 250, 196, 196),
-                //   width: 1,
-                // ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
@@ -92,5 +201,71 @@ class _ExpiryStatsSlideState extends State<ExpiryStatsSlide> {
         ),
       ),
     );
+  }
+}
+
+class ExpiryDataProcessor {
+  static Future<Map<String, double>> getExpiryData() async {
+    final addedMedicines = await _fetchMedicinesFromRepository();
+
+    int expiredCount = 0;
+    int soonExpiringCount = 0;
+    int safeCount = 0;
+
+    final now = DateTime.now();
+    final soonExpiryThreshold = now.add(Duration(days: 60)); // 2 months from now
+
+    for (var medicine in addedMedicines) {
+      final expiryDate = DateFormat('dd/MM/yyyy').parse(medicine['expiryDate']);
+
+      if (expiryDate.isBefore(now)) {
+        expiredCount++;
+      } else if (expiryDate.isBefore(soonExpiryThreshold)) {
+        soonExpiringCount++;
+      } else {
+        safeCount++;
+      }
+    }
+
+    final totalMedicines = addedMedicines.length;
+    final expiredPercentage = (expiredCount / totalMedicines) * 100;
+    final soonExpiringPercentage = (soonExpiringCount / totalMedicines) * 100;
+    final safePercentage = (safeCount / totalMedicines) * 100;
+
+    return {
+      'expired': expiredPercentage,
+      'soon': soonExpiringPercentage,
+      'safe': safePercentage,
+    };
+  }
+
+  // Fetch medicines from AddedMedicineRepository
+  static Future<List<Map<String, dynamic>>> _fetchMedicinesFromRepository() async {
+    final addedMedicineRepo = AddedMedicineRepository();
+    final addedMedicines = await addedMedicineRepo.getAllAddedMedicines();
+
+    if (addedMedicines.isEmpty) {
+      print('No added medicines available.');
+      return [];
+    }
+
+    // Convert medicine data to a list of maps
+    return addedMedicines.map((medicine) {
+      return {
+        'id': medicine.finalMedicine.id,
+        'productName': medicine.finalMedicine.medicine.productName,
+        'expiryDate': medicine.finalMedicine.medicine.expiryDate,
+        'price': medicine.finalMedicine.medicine.price,
+        'quantity': medicine.finalMedicine.medicine.quantity,
+        'batch': medicine.finalMedicine.medicine.batch,
+        'dealerName': medicine.finalMedicine.medicine.dealerName,
+        'gst': medicine.finalMedicine.medicine.gst,
+        'companyName': medicine.finalMedicine.medicine.companyName ?? "N/A",
+        'alertQuantity': medicine.finalMedicine.medicine.alertQuantity ?? "N/A",
+        'description': medicine.finalMedicine.medicine.description ?? "N/A",
+        'imagePath': medicine.finalMedicine.medicine.imagePath ?? "N/A",
+        'scannedBarcodes': medicine.scannedBarcodes,
+      };
+    }).toList();
   }
 }

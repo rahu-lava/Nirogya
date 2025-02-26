@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../Utils/permission_handler.dart';
-import '../../../Widget/expiry_card.dart';
+// import '../../../Widget/expiry_card.dart';
 import '../../../Widget/greetingWidget.dart';
 import '../../../Widget/pie_chart.dart';
 import '../../../Widget/sales_cards.dart';
@@ -108,9 +108,9 @@ class _DashboardState extends State<Dashboard> {
           ),
         ),
 
-        ExpiryPieChart(expiryData: expiryData),
-        SizedBox(height: 10),
-        ExpiryStatsSlide(),
+        ExpiryPieChart(),
+        // SizedBox(height: 10),
+        // ExpiryStatsSlide(),
         SizedBox(height: 25),
         Container(
           decoration: BoxDecoration(
@@ -129,9 +129,9 @@ class _DashboardState extends State<Dashboard> {
           ),
         ),
 
-        StocksPieChart(expiryData: expiryData),
-        SizedBox(height: 10),
-        StockStatsSlide(),
+        StockDashboard(),
+        // SizedBox(height: 10),
+        // StockStatsSlide(),
       ],
     );
   }

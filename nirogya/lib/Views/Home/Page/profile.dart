@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -13,7 +12,7 @@ import 'package:nirogya/Views/Settings%20Screen/settings_screen.dart';
 import 'package:nirogya/Views/Subscription%20Screen/subscription_screen.dart';
 import 'package:nirogya/Data/User/user_repository.dart'; // Import the UserRepository
 import 'package:nirogya/Model/User/user.dart';
-
+import 'package:shared_preferences/shared_preferences.dart'; // For SharedPreferences
 import '../../../Utils/testing_utils.dart'; // Import the User model
 
 class Profile extends StatefulWidget {
@@ -26,11 +25,13 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   final UserRepository _userRepository = UserRepository();
   User? _user; // To store user data
+  bool _isSubscribed = false; // Subscription status
 
   @override
   void initState() {
     super.initState();
     _loadUserDetails(); // Load user details when the widget initializes
+    _checkSubscriptionStatus(); // Check subscription status
   }
 
   // Load user details from the repository
@@ -42,6 +43,29 @@ class _ProfileState extends State<Profile> {
       setState(() {
         _user = user;
       });
+    }
+  }
+
+  // Check subscription status from SharedPreferences
+  Future<void> _checkSubscriptionStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isSubscribed = prefs.getBool('isSubscribed') ?? false;
+    });
+  }
+
+  // Navigate to a screen if subscribed, else show a Snackbar
+  void _navigateIfSubscribed(Widget screen) {
+    if (_isSubscribed) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => screen));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You need a subscription to access this feature.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -115,19 +139,17 @@ class _ProfileState extends State<Profile> {
               const SizedBox(height: 10),
               GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AttendanceScreen()));
+                    _navigateIfSubscribed(AttendanceScreen());
                   },
-                  child: _buildOption(
+                  child: _buildOptionWithStar(
                       "assets/images/Attendance.png", 'Attendance')),
               const SizedBox(height: 10),
               GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => DownloadScreen()));
+                    _navigateIfSubscribed(DownloadScreen());
                   },
-                  child:
-                      _buildOption("assets/images/Downloads.png", 'Download')),
+                  child: _buildOptionWithStar(
+                      "assets/images/Downloads.png", 'Download')),
               const SizedBox(height: 10),
               GestureDetector(
                   onTap: () {
@@ -184,6 +206,36 @@ class _ProfileState extends State<Profile> {
     );
   }
 
+  // Build an option with a gold star at the trail (end side)
+  Widget _buildOptionWithStar(String path, String text,
+      {Color textColor = Colors.black}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      child: Row(
+        children: [
+          Image.asset(path),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Poppins',
+                color: textColor,
+              ),
+            ),
+          ),
+          Icon(
+            Icons.star,
+            color: Color(0xFFD4AF37), // Gold star
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build a regular option
   Widget _buildOption(String path, String text,
       {Color textColor = Colors.black}) {
     return Padding(

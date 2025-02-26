@@ -39,8 +39,8 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
   }
 
   Future<void> _initializeData() async {
-    // Generate sample data
-    await _loadMedicines(); // Load medicines into the list
+    // Load medicines into the list
+    await _loadMedicines();
   }
 
   Future<void> _loadMedicines() async {
@@ -110,7 +110,7 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Price: \$${medicine.price}",
+                                        "Price: ₹${medicine.price}",
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: Colors.grey[700],
@@ -169,6 +169,19 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
               padding: const EdgeInsets.all(20.0),
               child: ElevatedButton(
                 onPressed: () async {
+                  // Check if the queue is empty
+                  if (_medicines.isEmpty) {
+                    // Show a Snackbar to inform the user
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            "Please add some medicines to the queue first."),
+                        duration: Duration(seconds: 3),
+                      ),
+                    );
+                    return; // Exit the function early
+                  }
+
                   // Calculate total barcodes to be printed
                   int totalBarcodes = _medicines.fold(
                       0, (sum, medicine) => sum + medicine.quantity);
@@ -250,6 +263,18 @@ class _MedicineQueueScreenState extends State<MedicineQueueScreen> {
   }
 
   Future<void> _printBarcodes() async {
+    // Check if the queue is empty
+    if (_medicines.isEmpty) {
+      // Show a Snackbar to inform the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Please add some medicines to the queue first."),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return; // Exit the function early
+    }
+
     // Show loading animation
     showDialog(
       context: context,
