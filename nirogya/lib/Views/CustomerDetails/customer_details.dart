@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nirogya/Data/Sales Bill/sales_bill_repo.dart';
 import 'package:nirogya/Model/Sales Bill/sales_bill.dart';
 import 'package:nirogya/Data/Added Medicine/added_medicine_repo.dart';
@@ -279,6 +280,10 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
             TextField(
               controller: numberController,
               keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly, // Allow only digits
+                LengthLimitingTextInputFormatter(10), // Limit to 10 digits
+              ],
               decoration: InputDecoration(
                 hintText: 'Enter customer phone number',
                 border: OutlineInputBorder(

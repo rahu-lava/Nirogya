@@ -116,12 +116,12 @@ class _SearchStockWidgetState extends State<SearchStockWidget> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
                       border: Border(
-                        right: BorderSide(
-                          color: const Color.fromARGB(
-                              255, 204, 28, 16), // Red border for stock
-                          width: 4.5,
-                        ),
-                      ),
+                          // right: BorderSide(
+                          //   color: const Color.fromARGB(
+                          //       255, 204, 28, 16), // Red border for stock
+                          //   width: 4.5,
+                          // ),
+                          ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(5),

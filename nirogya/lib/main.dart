@@ -20,7 +20,8 @@ import 'package:toasty_box/toast_enums.dart';
 import 'package:toasty_box/toasty_box.dart';
 
 import 'Model/Medicine/medicine.dart';
-import 'Views/Splash Screen/SplashScreen.dart';
+import 'Views/Splash Screen 2/splash_screen_2.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,7 +47,7 @@ Future<void> main() async {
     ChangeNotifierProvider(create: (context) => PurchaseViewModel()),
     ChangeNotifierProvider(create: (context) => PurchaseListViewModel()),
     ChangeNotifierProvider(create: (context) => UserViewModel()),
-  ], child: MyApp()));
+  ], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -69,7 +70,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: "Poppins"),
-      home: const SplashScreen(),
+      home: const SplashScreen2(),
     );
   }
 }

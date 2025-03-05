@@ -132,12 +132,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           // Log Out Option
-          _buildOption(
-            'assets/images/log_out.png', // Replace with your logout icon path
-            'Log Out',
-            onTap: _logOut,
-            textColor: Colors.red,
-          ),
+          // _buildOption(
+          //   'assets/images/log_out.png', // Replace with your logout icon path
+          //   'Log Out',
+          //   onTap: _logOut,
+          //   textColor: Colors.red,
+          // ),
         ],
       ),
     );

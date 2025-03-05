@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nirogya/Data/Added Medicine/added_medicine_repo.dart'; // Import the Added Medicine repository
@@ -13,22 +14,17 @@ class BarcodeScannerWithList extends StatefulWidget {
 
 class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
   List<Map<String, dynamic>> scannedItems = [];
-  List<String> scannedBarcodes =
-      []; // Temporary array to track scanned barcodes
+  List<String> scannedBarcodes = [];
   bool isFlashOn = false;
   MobileScannerController _scanController = MobileScannerController();
-  final AddedMedicineRepository _addedMedicineRepo =
-      AddedMedicineRepository(); // Added Medicine repository
+  final AddedMedicineRepository _addedMedicineRepo = AddedMedicineRepository();
+  final AudioPlayer _audioPlayer = AudioPlayer(); // Initialize AudioPlayer
 
   // Handle barcode scanning
   void _onBarcodeScanned(String barcode) async {
-    // Extract the base ID (first 5 characters)
     final String baseId = barcode.substring(0, 5);
-
-    // Fetch all added medicines
     final addedMedicines = await _addedMedicineRepo.getAllAddedMedicines();
 
-    // Find the medicine with the matching base ID
     final medicine = addedMedicines.firstWhere(
       (med) => med.finalMedicine.id.startsWith(baseId),
       orElse: () => ScannedMedicine(
@@ -59,35 +55,30 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
     }
 
     // If the medicine is found
-    // if (medicine.finalMedicine.id.isNotEmpty) {
-    // Check if the barcode is already scanned
     if (!scannedBarcodes.contains(barcode)) {
       setState(() {
-        // Check if the medicine is already in the scanned items list
         final existingItemIndex = scannedItems.indexWhere(
           (item) => item['id'].startsWith(baseId),
         );
 
         if (existingItemIndex != -1) {
-          // If the medicine is already in the list, increase its quantity
           scannedItems[existingItemIndex]['quantity'] += 1;
-
-          // Append the scanned barcode to the existing list
           scannedItems[existingItemIndex]['scannedBarcodes'].add(barcode);
         } else {
-          // If the medicine is not in the list, add it
           scannedItems.add({
-            'id': medicine.finalMedicine.id, // Use the base ID
+            'id': medicine.finalMedicine.id,
             'name': medicine.finalMedicine.medicine.productName,
             'quantity': 1,
             'price': medicine.finalMedicine.medicine.price,
-            'scannedBarcodes': [barcode], // Include the scanned barcode
+            'scannedBarcodes': [barcode],
           });
         }
 
-        // Add the barcode to the temporary array
         scannedBarcodes.add(barcode);
       });
+
+      // Play the scan sound
+      await _audioPlayer.play(AssetSource('sound/scan-success.mp3'));
     }
   }
 
@@ -100,11 +91,8 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
   // Remove an item
   void _removeItem(int index) {
     setState(() {
-      // Remove the barcodes associated with the medicine
       final baseId = scannedItems[index]['id'];
       scannedBarcodes.removeWhere((barcode) => barcode.startsWith(baseId));
-
-      // Remove the medicine from the list
       scannedItems.removeAt(index);
     });
   }
@@ -128,7 +116,6 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
       ),
       body: Stack(
         children: [
-          // Scanner View
           MobileScanner(
             controller: _scanController,
             onDetect: (barcode) {
@@ -137,7 +124,6 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
               }
             },
           ),
-          // Bottom Sheet with Scanned Items
           DraggableScrollableSheet(
             initialChildSize: 0.3,
             minChildSize: 0.3,
@@ -191,7 +177,6 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
                       ),
                     ),
                     Divider(),
-                    // Total Amount and Done Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -204,16 +189,24 @@ class _BarcodeScannerWithListState extends State<BarcodeScannerWithList> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            // Pass the scanned items to the CustomerDetailsPage
-                            print("printing scanned items ---");
-                            print(scannedItems);
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => CustomerDetailsPage(
-                                  scannedItems: scannedItems,
+                            if (scannedItems.isEmpty) {
+                              // Show a message if no items are scanned
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('No items scanned!'),
+                                  backgroundColor: Colors.red,
                                 ),
-                              ),
-                            );
+                              );
+                            } else {
+                              // Proceed to the next screen
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => CustomerDetailsPage(
+                                    scannedItems: scannedItems,
+                                  ),
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,

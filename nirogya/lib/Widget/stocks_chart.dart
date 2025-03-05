@@ -12,6 +12,7 @@ class _StockDashboardState extends State<StockDashboard> {
   Map<String, double> stockData = {}; // For pie chart percentages
   Map<String, int> stockCounts = {}; // For stats slide counts
   bool isLoading = true;
+  bool hasSufficientData = false; // Flag to check if there is sufficient data
 
   @override
   void initState() {
@@ -34,6 +35,8 @@ class _StockDashboardState extends State<StockDashboard> {
       stockData = percentages;
       stockCounts = counts;
       isLoading = false;
+      // Check if there is sufficient data (at least one non-zero count)
+      hasSufficientData = counts.values.any((count) => count > 0);
     });
   }
 
@@ -41,9 +44,30 @@ class _StockDashboardState extends State<StockDashboard> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        StocksPieChart(stockData: stockData), // Pie chart
+        // Pie Chart
+        Container(
+          height: 300,
+          width: double.infinity,
+          child: isLoading
+              ? Center(child: CircularProgressIndicator())
+              : hasSufficientData
+                  ? StocksPieChart(stockData: stockData)
+                  : Center(
+                      child: Text(
+                        'No sufficient data',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+        ),
         SizedBox(height: 20), // Space between pie chart and stats slide
-        StockStatsSlide(stockCounts: stockCounts), // Stats slide
+        // Stats Slide
+        hasSufficientData
+            ? StockStatsSlide(stockCounts: stockCounts)
+            : SizedBox(), // Hide stats slide if no sufficient data
       ],
     );
   }
@@ -56,33 +80,29 @@ class StocksPieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
-      width: double.infinity,
-      child: PieChart(
-        PieChartData(
-          pieTouchData: PieTouchData(
-            touchCallback: (FlTouchEvent event, pieTouchResponse) {
-              // Handle touch interactions if needed
-            },
-          ),
-          borderData: FlBorderData(show: false),
-          sectionsSpace: 5,
-          centerSpaceRadius: 75,
-          sections: stockData.entries.map((entry) {
-            return PieChartSectionData(
-              color: getColor(entry.key),
-              value: entry.value,
-              title: '${entry.value.toStringAsFixed(1)}%',
-              radius: 50,
-              titleStyle: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            );
-          }).toList(),
+    return PieChart(
+      PieChartData(
+        pieTouchData: PieTouchData(
+          touchCallback: (FlTouchEvent event, pieTouchResponse) {
+            // Handle touch interactions if needed
+          },
         ),
+        borderData: FlBorderData(show: false),
+        sectionsSpace: 5,
+        centerSpaceRadius: 75,
+        sections: stockData.entries.map((entry) {
+          return PieChartSectionData(
+            color: getColor(entry.key),
+            value: entry.value,
+            title: '${entry.value.toStringAsFixed(1)}%',
+            radius: 50,
+            titleStyle: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          );
+        }).toList(),
       ),
     );
   }

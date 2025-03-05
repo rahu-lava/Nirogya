@@ -1,14 +1,10 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart'; // For loading assets
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:nirogya/Model/Medicine/medicine.dart';
-import 'package:nirogya/Model/Sales Bill/sales_bill.dart';
 import 'package:nirogya/Data/User/user_repository.dart';
 import 'package:nirogya/Data/Sales Bill/sales_bill_repo.dart'; // Import the SalesBill repository
-import 'mobilePdfDownloader.dart';
-import 'webPdfDownloader.dart';
 
 class SalesBillPdfUtils {
   static String generateInvoiceNumber() {
@@ -38,6 +34,11 @@ class SalesBillPdfUtils {
       throw Exception("User details not found!");
     }
 
+    // Load the logo image from assets
+    final ByteData logoData =
+        await rootBundle.load('assets/images/nirogya_logo_short.png');
+    final Uint8List logoBytes = logoData.buffer.asUint8List();
+
     // Generate the PDF
     final pdf = pw.Document();
 
@@ -59,24 +60,21 @@ class SalesBillPdfUtils {
               medicine.productName,
               medicine.batch,
               medicine.expiryDate,
-              "₹${medicine.price.toStringAsFixed(2)}",
+              "${medicine.price.toStringAsFixed(2)}",
               medicine.quantity,
-              "₹${itemTotal.toStringAsFixed(2)}",
+              "${itemTotal.toStringAsFixed(2)}",
             ];
           }).toList();
 
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // Title
+              // Logo Image
               pw.Center(
-                child: pw.Text(
-                  "Nirogya",
-                  style: pw.TextStyle(
-                    fontSize: 28,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.red900,
-                  ),
+                child: pw.Image(
+                  pw.MemoryImage(logoBytes), // Use the loaded image
+                  width: 100, // Adjust the width as needed
+                  height: 100, // Adjust the height as needed
                 ),
               ),
               pw.SizedBox(height: 20),
@@ -147,7 +145,7 @@ class SalesBillPdfUtils {
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
                       pw.Text(
-                        "Total Amount: ₹${totalAmount.toStringAsFixed(2)}",
+                        "Total Amount: Rs${totalAmount.toStringAsFixed(2)}",
                         style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold,
                           fontSize: 16,

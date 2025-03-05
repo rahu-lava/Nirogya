@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../Model/Attendence/attendance.dart';
 import '../../Model/Employee/employee.dart';
@@ -79,7 +80,7 @@ class EmployeeRepository {
   }
 
   // Mark attendance for an employee
-  Future<void> markAttendance(
+  Future<void> markAttendance(BuildContext context,
       String employeeId, DateTime timeIn, DateTime? timeOut) async {
     await _ensureBoxIsOpen(); // Ensure the box is open
     final employee = await getEmployeeById(employeeId);
@@ -99,6 +100,13 @@ class EmployeeRepository {
         if (timeOut != null) {
           // Update timeOut if the employee is clocking out
           existingAttendance.timeOut = timeOut;
+        } else {
+ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Attendance already recorded for today!'),
+                backgroundColor: Colors.red,
+              ),
+            );
         }
       } else {
         // If no record exists, create a new one

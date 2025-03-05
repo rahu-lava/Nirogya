@@ -12,7 +12,7 @@ class AuthViewModel extends ChangeNotifier {
 
   // Constructor
   AuthViewModel() {
-    print("AuthProvider Constructor");
+    // print("AuthProvider Constructor");
     _client = Client();
     _client
         .setEndpoint('https://cloud.appwrite.io/v1')

@@ -5,6 +5,7 @@ import 'package:nirogya/View%20Model/Auth/auth_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../Home/home.dart';
 import '../Login Screen/login.dart';
 // import 'package:introduction_screen/introduction_screen.dart';
 // import 'package:nirogya/Screen/Home/home.dart';
@@ -36,8 +37,8 @@ class _IntroScreenState extends State<IntroScreen> {
       );
     } else {
       // Handle "Get Started" button action here
-      Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const HomePage()));
       print("Get Started Pressed");
     }
   }

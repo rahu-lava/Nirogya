@@ -187,7 +187,7 @@ class TestingUtils {
           0.0,
           (sum, medicine) => sum + (medicine.price * medicine.quantity),
         );
-        print("Total Amount: ₹${totalAmount.toStringAsFixed(2)}");
+        print("Total Amount: Rs${totalAmount.toStringAsFixed(2)}");
         print("----------------------------");
       }
       print("===============================");

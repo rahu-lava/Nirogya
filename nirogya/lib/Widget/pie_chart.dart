@@ -12,6 +12,7 @@ class ExpiryPieChart extends StatefulWidget {
 class _ExpiryPieChartState extends State<ExpiryPieChart> {
   Map<String, int> expiryCounts = {}; // Store counts instead of percentages
   bool isLoading = true;
+  bool hasSufficientData = false; // Flag to check if there is sufficient data
   int touchedIndex = -1;
 
   @override
@@ -25,6 +26,8 @@ class _ExpiryPieChartState extends State<ExpiryPieChart> {
     setState(() {
       expiryCounts = counts;
       isLoading = false;
+      // Check if there is sufficient data (at least one non-zero count)
+      hasSufficientData = counts.values.any((count) => count > 0);
     });
   }
 
@@ -75,34 +78,49 @@ class _ExpiryPieChartState extends State<ExpiryPieChart> {
           width: double.infinity,
           child: isLoading
               ? Center(child: CircularProgressIndicator())
-              : PieChart(
-                  PieChartData(
-                    pieTouchData: PieTouchData(
-                      touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                        setState(() {
-                          if (!event.isInterestedForInteractions ||
-                              pieTouchResponse == null ||
-                              pieTouchResponse.touchedSection == null) {
-                            touchedIndex = -1;
-                            return;
-                          }
-                          touchedIndex = pieTouchResponse
-                              .touchedSection!.touchedSectionIndex;
-                        });
-                      },
+              : hasSufficientData
+                  ? PieChart(
+                      PieChartData(
+                        pieTouchData: PieTouchData(
+                          touchCallback:
+                              (FlTouchEvent event, pieTouchResponse) {
+                            setState(() {
+                              if (!event.isInterestedForInteractions ||
+                                  pieTouchResponse == null ||
+                                  pieTouchResponse.touchedSection == null) {
+                                touchedIndex = -1;
+                                return;
+                              }
+                              touchedIndex = pieTouchResponse
+                                  .touchedSection!.touchedSectionIndex;
+                            });
+                          },
+                        ),
+                        borderData: FlBorderData(
+                          show: false,
+                        ),
+                        sectionsSpace: 5,
+                        centerSpaceRadius: 75,
+                        sections: showingSections(),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        'No sufficient data',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ),
-                    borderData: FlBorderData(
-                      show: false,
-                    ),
-                    sectionsSpace: 5,
-                    centerSpaceRadius: 75,
-                    sections: showingSections(),
-                  ),
-                ),
         ),
         SizedBox(height: 20), // Space between pie chart and stats slide
-        ExpiryStatsSlide(
-            expiryCounts: expiryCounts), // Pass the expiry counts to the slide
+        hasSufficientData
+            ? ExpiryStatsSlide(
+                expiryCounts:
+                    expiryCounts) // Pass the expiry counts to the slide
+            : SizedBox(), // Hide stats slide if no sufficient data
       ],
     );
   }

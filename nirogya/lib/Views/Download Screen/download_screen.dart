@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
 import 'package:excel/excel.dart' as excel;
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 
 import '../../Data/Added Medicine/added_medicine_repo.dart';
@@ -87,7 +88,36 @@ class _DownloadScreenState extends State<DownloadScreen> {
     });
 
     // Open the generated file
-    await OpenFile.open(filePath);
+    // await OpenFile.open(filePath);
+    // ... inside _generateAndOpenFile after generating the file
+    final result = await OpenFile.open(filePath);
+
+// Check if no app is found to open the file
+    if (result.type == ResultType.noAppToOpen) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'No app found to open Excel files. Please install Google Sheets.',
+          ),
+          action: SnackBarAction(
+            label: 'Download',
+            onPressed: () async {
+              final Uri googleSheetsUrl = Uri.parse(
+                  'https://play.google.com/store/apps/details?id=com.google.android.apps.docs.editors.sheets');
+              if (await canLaunchUrl(googleSheetsUrl)) {
+                await launchUrl(googleSheetsUrl);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Could not launch the Play Store link.'),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _generateExcel(List<dynamic> data, String filePath) async {

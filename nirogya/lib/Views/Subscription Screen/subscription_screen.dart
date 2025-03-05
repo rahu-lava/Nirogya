@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../Home/Page/profile.dart'; // Import SharedPreferences
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({Key? key}) : super(key: key);
@@ -11,6 +13,7 @@ class SubscriptionScreen extends StatefulWidget {
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   late Razorpay _razorpay;
+  bool _isSubscribed = false; // Track subscription status
 
   @override
   void initState() {
@@ -19,12 +22,21 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    _checkSubscriptionStatus(); // Check subscription status on init
   }
 
   @override
   void dispose() {
     _razorpay.clear();
     super.dispose();
+  }
+
+  // Check subscription status from SharedPreferences
+  Future<void> _checkSubscriptionStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isSubscribed = prefs.getBool('isSubscribed') ?? false;
+    });
   }
 
   // Handle payment success
@@ -38,10 +50,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       const SnackBar(content: Text("Payment Successful!")),
     );
 
-    // Optionally, navigate back or update the UI
+    // Update UI
     if (mounted) {
-      setState(() {});
+      setState(() {
+        _isSubscribed = true;
+      });
     }
+
+    // Navigate back to the attendance screen
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => Profile()),
+    );
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
@@ -56,7 +75,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  void _openRazorpay() {
+  void _openRazorpay() async {
+    // Check if already subscribed
+    if (_isSubscribed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You are already subscribed!")),
+      );
+      return;
+    }
+
     var options = {
       'key': 'rzp_test_1DP5mmOlF5G5ag', // Replace with your Razorpay key
       'amount': 4900, // Amount in paise (₹49)

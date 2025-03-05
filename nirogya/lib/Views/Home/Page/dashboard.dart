@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-
 import '../../../Utils/permission_handler.dart';
-// import '../../../Widget/expiry_card.dart';
 import '../../../Widget/greetingWidget.dart';
 import '../../../Widget/pie_chart.dart';
 import '../../../Widget/sales_cards.dart';
 import '../../../Widget/sales_chart.dart';
-import '../../../Widget/stock_card.dart';
 import '../../../Widget/stocks_chart.dart';
-// import '../../../utils/permission_handler.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -17,11 +13,11 @@ class Dashboard extends StatefulWidget {
   State<Dashboard> createState() => _DashboardState();
 }
 
-Map<String, double> expiryData = {
-  'expired': 20.0,
-  'safe': 60.0,
-  'soon': 20.0,
-};
+// Map<String, double> expiryData = {
+//   'expired': 20.0,
+//   'safe': 60.0,
+//   'soon': 20.0,
+// };
 
 class _DashboardState extends State<Dashboard> {
   String _selectedValue = 'Week';

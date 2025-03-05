@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nirogya/Data/Employee/employee_repo.dart';
 import 'package:nirogya/Model/Employee/employee.dart';
@@ -195,6 +195,10 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   const SizedBox(height: 5),
                   TextField(
                     controller: nameController,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(
+                          12), // Limit to 10 digits
+                    ],
                     decoration: InputDecoration(
                       hintText: 'Enter employee name',
                       border: OutlineInputBorder(
@@ -215,6 +219,12 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   TextField(
                     controller: contactController,
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter
+                          .digitsOnly, // Allow only digits
+                      LengthLimitingTextInputFormatter(
+                          10), // Limit to 10 digits
+                    ],
                     decoration: InputDecoration(
                       hintText: 'Enter employee contact number',
                       border: OutlineInputBorder(

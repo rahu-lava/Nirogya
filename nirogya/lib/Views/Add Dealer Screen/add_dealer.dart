@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nirogya/Model/Dealer/dealer.dart';
 import 'package:nirogya/View%20Model/Dealer/dealer_view_model.dart';
 import 'package:provider/provider.dart';
@@ -81,6 +82,10 @@ class _AddDealerScreenState extends State<AddDealerScreen> {
                       const SizedBox(height: 5),
                       TextField(
                         controller: nameController,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(
+                              12), // Limit to 10 digits
+                        ],
                         decoration: InputDecoration(
                           hintText: 'Enter dealer name',
                           border: OutlineInputBorder(
@@ -97,6 +102,12 @@ class _AddDealerScreenState extends State<AddDealerScreen> {
                       TextField(
                         controller: contactController,
                         keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter
+                              .digitsOnly, // Allow only digits
+                          LengthLimitingTextInputFormatter(
+                              10), // Limit to 10 digits
+                        ],
                         decoration: InputDecoration(
                           hintText: 'Enter dealer contact number',
                           border: OutlineInputBorder(
@@ -125,6 +136,10 @@ class _AddDealerScreenState extends State<AddDealerScreen> {
                       const SizedBox(height: 5),
                       TextField(
                         controller: gstinController,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(
+                              15), // Limit to 10 digits
+                        ],
                         decoration: InputDecoration(
                           hintText: 'Enter GSTIN number',
                           border: OutlineInputBorder(

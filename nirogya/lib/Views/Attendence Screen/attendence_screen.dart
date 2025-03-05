@@ -146,6 +146,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   onPressed: () async {
                     if (selectedEmployeeId != null) {
                       await _employeeRepository.markAttendance(
+                        context,
                         selectedEmployeeId!,
                         DateTime.now(),
                         null, // Time out is null for clock-in
@@ -269,6 +270,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       onPressed: () async {
                         if (selectedEmployeeId != null && timeIn != null) {
                           await _employeeRepository.markAttendance(
+                            context,
                             selectedEmployeeId!,
                             timeIn!, // Use the stored clock-in time
                             DateTime.now(), // Current time for clock-out

@@ -1,12 +1,16 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Import this
 import '../../Model/Employee/employee.dart';
 
 class EmployeeDetailsDialog extends StatelessWidget {
   final Employee employee;
 
   const EmployeeDetailsDialog({super.key, required this.employee});
+
+  String formatTime(DateTime? dateTime) {
+    return dateTime != null ? DateFormat('HH:mm').format(dateTime) : 'N/A';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +37,15 @@ class EmployeeDetailsDialog extends StatelessWidget {
           if (employee.profileImage.isNotEmpty)
             Image.file(
               File(employee.profileImage),
-              height: 150,
+              height: 250,
               width: double.infinity,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
             ),
           const SizedBox(height: 10),
 
           // Date of Joining
           Text(
-            "Date of Joining: ${employee.dateOfJoining.toLocal()}",
+            "Date of Joining: ${DateFormat('yyyy-MM-dd').format(employee.dateOfJoining)}",
             style: const TextStyle(fontSize: 16),
           ),
           const SizedBox(height: 20),
@@ -58,10 +62,11 @@ class EmployeeDetailsDialog extends StatelessWidget {
             Column(
               children: employee.attendance.map((attendance) {
                 return ListTile(
-                  title: Text("Date: ${attendance.date.toLocal()}"),
+                  title: Text(
+                      "Date: ${DateFormat('yyyy-MM-dd').format(attendance.date)}"),
                   subtitle: Text(
-                    "Time In: ${attendance.timeIn?.toLocal() ?? 'N/A'}\n"
-                    "Time Out: ${attendance.timeOut?.toLocal() ?? 'N/A'}",
+                    "Time In: ${formatTime(attendance.timeIn)}\n"
+                    "Time Out: ${formatTime(attendance.timeOut)}",
                   ),
                 );
               }).toList(),

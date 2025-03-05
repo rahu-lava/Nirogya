@@ -1,10 +1,9 @@
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:flutter/services.dart'; // For loading assets
 import 'package:flutter/foundation.dart';
 import 'package:nirogya/Model/Medicine/medicine.dart';
 import 'package:nirogya/Model/Bill/bill.dart';
-
-import 'package:nirogya/Utils/testing_utils.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../Data/Bill/bill_repository.dart';
@@ -55,6 +54,11 @@ Future<void> generatePurchaseBillPdfBytes(bool isShare) async {
   // final billRepository = BillRepository();
   await BillRepository.saveBill(bill);
 
+  // Load the logo image from assets
+  final ByteData logoData =
+      await rootBundle.load('assets/images/nirogya_logo_short.png');
+  final Uint8List logoBytes = logoData.buffer.asUint8List();
+
   final pdf = pw.Document();
 
   pdf.addPage(
@@ -81,25 +85,22 @@ Future<void> generatePurchaseBillPdfBytes(bool isShare) async {
             medicine.productName,
             medicine.batch,
             medicine.expiryDate,
-            '₹${medicine.price.toStringAsFixed(2)}',
+            '${medicine.price.toStringAsFixed(2)}',
             medicine.quantity,
             '${medicine.gst}%',
-            '₹${itemTotal.toStringAsFixed(2)}',
+            '${itemTotal.toStringAsFixed(2)}',
           ];
         }).toList();
 
         return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            // Title
+            // Logo Image
             pw.Center(
-              child: pw.Text(
-                "Nirogya",
-                style: pw.TextStyle(
-                  fontSize: 28,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.red900,
-                ),
+              child: pw.Image(
+                pw.MemoryImage(logoBytes), // Use the loaded image
+                width: 150, // Adjust the width as needed
+                height: 150, // Adjust the height as needed
               ),
             ),
             pw.SizedBox(height: 20),
@@ -155,7 +156,7 @@ Future<void> generatePurchaseBillPdfBytes(bool isShare) async {
                 fontWeight: pw.FontWeight.bold,
                 color: PdfColors.white,
               ),
-              headerDecoration: pw.BoxDecoration(
+              headerDecoration: const pw.BoxDecoration(
                 color: PdfColors.red900,
               ),
               cellHeight: 25,
@@ -172,20 +173,20 @@ Future<void> generatePurchaseBillPdfBytes(bool isShare) async {
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
                     pw.Text(
-                      'Subtotal: ₹${totalAmount.toStringAsFixed(2)}',
+                      'Subtotal: ${totalAmount.toStringAsFixed(2)}',
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(
-                      'CGST: ₹${totalCGST.toStringAsFixed(2)}',
+                      'CGST: ${totalCGST.toStringAsFixed(2)}',
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Text(
-                      'SGST: ₹${totalSGST.toStringAsFixed(2)}',
+                      'SGST: ${totalSGST.toStringAsFixed(2)}',
                       style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                     ),
                     pw.Divider(),
                     pw.Text(
-                      'Total Amount: ₹${(totalAmount + totalCGST + totalSGST).toStringAsFixed(2)}',
+                      'Total Amount: Rs${(totalAmount + totalCGST + totalSGST).toStringAsFixed(2)}',
                       style: pw.TextStyle(
                         fontWeight: pw.FontWeight.bold,
                         fontSize: 16,
